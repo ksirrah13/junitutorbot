@@ -19,21 +19,25 @@ client.on('ready', () => {
 
 client.on('messageCreate', async msg => {
   if (msg.author.id != client.user.id) {
-    const prompt = msg.content;
-    if (!prompt) {
+    const inputPrompt = msg.content;
+    if (!inputPrompt) {
       console.log('no prompt input');
       return;
     }
-    const completion = await doCompletion(prompt);
-    if (!completion) {
+    const prompt = inputPrompt.replace('<@1072617337951367188>', '').trim();
+    const aiResult = await doCompletion(prompt);
+    const wolframResult = await doWolfram(prompt); 
+    const anthropicResult = await doAnthropic(prompt);
+    if (!aiResult) {
       console.log('no completion data');
       return;
     }
-    await doWolfram();
-    await doAnthropic();
-    await msg.channel.send(completion);
+    console.log('all results', {aiResult, wolframResult, anthropicResult})
+    await msg.channel.send(JSON.stringify({aiResult, wolframResult, anthropicResult}, null, 2));
   }
 });
+
+  
 
 const startDiscord = () => client.login(token);
 
