@@ -1,4 +1,4 @@
-const doWolfram = async (prompt) => {
+const doWolfram = async (prompt, msg) => {
   try {
     const wolframApi = await import("@tanzanite/wolfram-alpha");
     const waApi = wolframApi.initializeClass(process.env.WOLFRAM_APP_ID);
@@ -6,6 +6,7 @@ const doWolfram = async (prompt) => {
       .getFull({ input: prompt, includepodid: 'Result', output: 'json' });
 
     console.log('wolfram result', queryResult);
+    let result = '';
     if (queryResult && queryResult.pods) {
       const pods = queryResult.pods;
       const output = pods
@@ -17,15 +18,20 @@ const doWolfram = async (prompt) => {
         })
         .join("\n");
       console.log(output);
-      return output;
+      result = output;
     }
-    if (queryResult) {
-      return `<img src="${queryResult}" alt="result">`;
+    else if (queryResult) {
+      result = `<img src="${queryResult}" alt="result">`;
     }
-    return "no results";
+    await sendResponse(result, msg);
+    return result;
   } catch (error) {
     console.error(error);
   }
+}
+
+const sendResponse = async (result, msg) => {
+  await msg.channel.send(`Wolfram: ${result}`)
 }
 
 module.exports = { doWolfram };

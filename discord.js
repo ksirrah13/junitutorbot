@@ -25,15 +25,13 @@ client.on('messageCreate', async msg => {
       return;
     }
     const prompt = inputPrompt.replace('<@1072617337951367188>', '').trim();
-    const aiResult = await doCompletion(prompt);
-    const wolframResult = await doWolfram(prompt); 
-    const anthropicResult = await doAnthropic(prompt);
-    if (!aiResult) {
-      console.log('no completion data');
-      return;
-    }
+    try {
+    const [aiResult, wolframResult, anthropicResult]  = await Promise.all([doCompletion(prompt, msg), doWolfram(prompt, msg), doAnthropic(prompt, msg)]);
     console.log('all results', {aiResult, wolframResult, anthropicResult})
-    await msg.channel.send(JSON.stringify({aiResult, wolframResult, anthropicResult}, null, 2));
+    } catch (error) {
+      console.error(error);
+      msg.channel.send('error processing request');
+    }
   }
 });
 

@@ -5,7 +5,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const doCompletion = async (prompt) => {
+const doCompletion = async (prompt, msg) => {
   try {
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
@@ -13,10 +13,16 @@ const doCompletion = async (prompt) => {
       max_tokens: 200,
     });
     console.log('completion result', { prompt, completion: completion.data.choices[0].text });
-    return completion.data.choices[0].text;
+    const result = completion.data.choices[0].text;
+    await sendResponse(result, msg);
+    return result;
   } catch (error) {
     console.error(error);
   }
+}
+
+const sendResponse = async (result, msg) => {
+  await msg.channel.send(`OpenAi: ${result}`)
 }
 
 module.exports = { doCompletion }
