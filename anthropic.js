@@ -1,9 +1,9 @@
 import { AI_PROMPT, Client, HUMAN_PROMPT } from '@anthropic-ai/sdk';
-import { createEmbedWrapper } from './discord_utils';
+import { createEmbedWrapper } from './discord_utils.js';
 
 const client = new Client(process.env.ANTHROPIC_API_KEY);
 
-const doAnthropic = async (prompt, thread) => {
+export const doAnthropic = async (prompt, thread) => {
   try {
     const completion = await client
       .completeStream(
@@ -40,5 +40,3 @@ const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following qu
 Question: ${prompt}
 
 ${AI_PROMPT}`
-
-module.exports = { doAnthropic };

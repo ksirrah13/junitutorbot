@@ -1,12 +1,12 @@
-import { createEmbedWrapper, createEmbedImages } from './discord_utils';
+import { createEmbedWrapper, createEmbedImages } from './discord_utils.js';
+import WolframApi from '@tanzanite/wolfram-alpha';
 
 
 // TODO add a precheck that verifies wolfram can answer the question
 // https://products.wolframalpha.com/query-recognizer/documentation
-const doWolfram = async (prompt, thread) => {
+export const doWolfram = async (prompt, thread) => {
   try {
-    const wolframApi = await import("@tanzanite/wolfram-alpha");
-    const waApi = wolframApi.initializeClass(process.env.WOLFRAM_APP_ID);
+    const waApi = WolframApi(process.env.WOLFRAM_APP_ID);
     const queryResult = await waApi
       .getFull({ input: prompt, includepodid: 'Result', output: 'json', podstate: 'Step-by-step solution' });
     // const queryResult = await waApi
@@ -60,8 +60,6 @@ const sendTextResponse = async (result, thread) => {
 const sendImageResponse = async (images, thread) => {
   await thread.send({ embeds: [createEmbedImages('Wolfram', images)] });
 }
-
-module.exports = { doWolfram };
 
 
     // <h2>Input</h2>

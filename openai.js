@@ -1,5 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
-import { createEmbedWrapper } from './discord_utils';
+import { createEmbedWrapper } from './discord_utils.js';
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,

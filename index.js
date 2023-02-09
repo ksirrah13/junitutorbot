@@ -1,6 +1,6 @@
 import express from 'express';
-// import { startDiscord } from './bot';
-import { connectDb } from './data_storage';
+import { startDiscord } from './bot.js';
+import { connectDb } from './data_storage.js';
 
 const app = express();
 
@@ -9,7 +9,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3000, async () => {
-  // await startDiscord();
+  await startDiscord();
   connectDb();
   console.log('server started');
 });
