@@ -1,4 +1,4 @@
-const { createEmbedWrapper, createEmbedImages } = require('./discord_utils');
+import { createEmbedWrapper, createEmbedImages } from './discord_utils';
 
 
 // TODO add a precheck that verifies wolfram can answer the question

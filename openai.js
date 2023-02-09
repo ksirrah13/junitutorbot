@@ -1,5 +1,5 @@
-const { Configuration, OpenAIApi } = require("openai");
-const { createEmbedWrapper } = require('./discord_utils');
+import { Configuration, OpenAIApi } from "openai";
+import { createEmbedWrapper } from './discord_utils';
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,7 +7,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // TODO figure out why sometimes open ai refuses to answer or hangs
-const doCompletion = async (prompt, thread) => {
+export const doCompletion = async (prompt, thread) => {
   try {
     const enhancedPrompt = createPromptTemplate(prompt);
     const completion = await openai.createCompletion({
@@ -33,5 +33,3 @@ const createPromptTemplate = (prompt) => `Answer the following question by first
 Question: ${prompt}
 
 Answer:`
-
-module.exports = { doCompletion }

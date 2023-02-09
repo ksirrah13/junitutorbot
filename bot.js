@@ -1,8 +1,8 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const { doCompletion } = require('./openai');
-const { doWolfram } = require('./wolfram');
-const { doAnthropic } = require('./anthropic');
-const { recordNewPrompt } = require('./data_storage');
+import { Client, GatewayIntentBits } from 'discord.js';
+import { doCompletion } from './openai';
+import { doWolfram } from './wolfram';
+import { doAnthropic } from './anthropic';
+import { recordNewPrompt } from './data_storage';
 
 const client = new Client({
   intents: [
@@ -43,6 +43,10 @@ client.on('messageCreate', async msg => {
   }
 });
 
-const startDiscord = async () => { console.log('starting discord bot'); try { await client.login(token) } catch (error) { console.error(error) } };
-
-module.exports = { startDiscord };
+export const startDiscord = async () => { 
+  console.log('starting discord bot'); 
+  try { 
+    await client.login(token) 
+  } catch (error) { 
+    console.error(error) 
+  } };

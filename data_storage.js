@@ -1,8 +1,9 @@
-const mongoose = require('mongoose');
-const { Prompt } = require('./models/prompt');
-require('dotenv').config();
+import mongoose from 'mongoose';
+import { Prompt } from './models/prompt';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const connectDb = async () => {
+export const connectDb = async () => {
     try {
         console.log('connecting to db...');
         await mongoose.connect(process.env.DB_URI);
@@ -11,8 +12,6 @@ const connectDb = async () => {
     }
 }
 
-const recordNewPrompt = async ({input, prompt, responses}) => {
+export const recordNewPrompt = async ({input, prompt, responses}) => {
     await Prompt.create({input, prompt, responses })
 }
-
-module.exports = { connectDb, recordNewPrompt };

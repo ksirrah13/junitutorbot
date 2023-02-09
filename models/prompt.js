@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const schema = new mongoose.Schema({
     input: String,
@@ -6,6 +6,4 @@ const schema = new mongoose.Schema({
     responses: [{model: String, response: String}],
   });
   
-const Prompt = mongoose.model('Prompt', schema);
-
-module.exports = { Prompt };
+export const Prompt = mongoose.model('Prompt', schema);

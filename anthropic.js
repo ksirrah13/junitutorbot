@@ -1,5 +1,5 @@
-const { AI_PROMPT, Client, HUMAN_PROMPT } = require('@anthropic-ai/sdk');
-const { createEmbedWrapper } = require('./discord_utils');
+import { AI_PROMPT, Client, HUMAN_PROMPT } from '@anthropic-ai/sdk';
+import { createEmbedWrapper } from './discord_utils';
 
 const client = new Client(process.env.ANTHROPIC_API_KEY);
 

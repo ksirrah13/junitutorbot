@@ -1,6 +1,6 @@
-const { EmbedBuilder } = require('discord.js');
+import { EmbedBuilder } from 'discord.js';
 
-const createEmbedWrapper = (title, results) => {
+export const createEmbedWrapper = (title, results) => {
   const embed = new EmbedBuilder()
     .setColor(0x0099FF)
     .setTitle(title)
@@ -25,7 +25,7 @@ const chunkString = (str, length) => {
   return str.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
 }
 
-const createEmbedImages = (title, images) => {
+export const createEmbedImages = (title, images) => {
   const embed = new EmbedBuilder()
     .setColor(0x0099FF)
     .setTitle(title)
@@ -33,5 +33,3 @@ const createEmbedImages = (title, images) => {
   embed.setTimestamp();
   return embed;
 }
-
-module.exports = { createEmbedWrapper, createEmbedImages }
