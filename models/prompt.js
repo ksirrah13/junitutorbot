@@ -1,4 +1,6 @@
-const schema = new Schema({
+const mongoose = require('mongoose');
+
+const schema = new mongoose.Schema({
     input: String,
     prompt: String,
     responses: [{model: String, response: String}],
