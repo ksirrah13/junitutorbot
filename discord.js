@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { doCompletion } = require('./openai');
 const { doWolfram } = require('./wolfram');
 const { doAnthropic } = require('./anthropic');
+const { recordNewPrompt } = require('./data_storage');
 
 const client = new Client({
   intents: [
@@ -32,7 +33,8 @@ client.on('messageCreate', async msg => {
         reason: 'Collecting responses from AIs',
       })
       const [aiResult, wolframResult, anthropicResult] = await Promise.allSettled([doCompletion(prompt, thread), doWolfram(prompt, thread), doAnthropic(prompt, thread)]);
-      console.log('all results', { aiResult, wolframResult, anthropicResult })
+      console.log('all results', { aiResult, wolframResult, anthropicResult });
+      await recordNewPrompt({input: prompt, prompt, responses: [{model: 'anthropic', response: anthropicResult}, {model: 'openai', response: aiResult}, {model: 'wolfram', response: wolframResult}]});
     } catch (error) {
       console.error(error);
       thread.send('error processing request');
