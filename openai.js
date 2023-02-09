@@ -14,12 +14,12 @@ const doCompletion = async (prompt, thread) => {
       prompt: enhancedPrompt,
       max_tokens: 1000,
     });
-    console.log('completion result', { prompt: enhancedPrompt, completion: completion.data.choices[0].text });
     const result = completion.data.choices[0].text;
     await sendResponse(result, thread);
     return result;
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 

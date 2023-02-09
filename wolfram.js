@@ -9,8 +9,6 @@ const doWolfram = async (prompt, thread) => {
     // const queryResult = await waApi
     //   .getSimple(prompt);
 
-
-    console.log('wolfram result', queryResult);
     let result = '';
     if (!queryResult.success) {
       if (queryResult.didyoumeans && queryResult.didyoumeans.val) {
@@ -18,6 +16,7 @@ const doWolfram = async (prompt, thread) => {
       } else {
         result = 'unsuccessful response from api';
       }
+      console.log('wolfram queryResult', queryResult);
       await sendTextResponse(result, thread);
       return result;
     }
@@ -35,18 +34,19 @@ const doWolfram = async (prompt, thread) => {
         await sendTextResponse(stepsText, thread);
         return stepsText;
       }
-      console.log('no intermeidate pods', resultSubPods);
+      console.log('no intermediate pods', resultSubPods);
       // no step by step so get the first plain text pod response
       const firstPod = resultSubPods[0];
       const resultText = firstPod.plaintext;
       await sendTextResponse(resultText, thread);
       return resultText;
     }
-    console.error(queryResult, 'no pods in response');
+    console.error('no pods in response', queryResult);
     await sendTextResponse('no results in response', thread);
     return 'no results in response';
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 

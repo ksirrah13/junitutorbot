@@ -10,24 +10,24 @@ const doAnthropic = async (prompt, thread) => {
         {
           prompt: createPromptTemplate(prompt),
           stop_sequences: [HUMAN_PROMPT],
-          max_tokens_to_sample: 200,
+          max_tokens_to_sample: 1000,
           model: "claude-v1",
         },
         {
           onOpen: (response) => {
-            console.log("Opened stream, HTTP status code", response.status);
+            console.log("Opened anthropic stream, HTTP status code", response.status);
           },
           // onUpdate: (completion) => {
           //   console.log(completion.completion);
           // },
         }
       );
-    console.log('completed sampling', completion);
     const result = completion.completion;
     await sendResponse(result, thread);
     return result;
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 
