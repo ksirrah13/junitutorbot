@@ -11,4 +11,13 @@ const createEmbedWrapper = (title, results) => {
   return embed;
 }
 
-module.exports = { createEmbedWrapper }
+const createEmbedImages = (title, images) => {
+  const embed = new EmbedBuilder()
+    .setColor(0x0099FF)
+    .setTitle(title)
+  images.forEach(image => embed.setImage(image));
+  embed.setTimestamp();
+  return embed;
+}
+
+module.exports = { createEmbedWrapper, createEmbedImages }

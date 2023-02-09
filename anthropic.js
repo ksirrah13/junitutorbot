@@ -8,7 +8,7 @@ const doAnthropic = async (prompt, thread) => {
     const completion = await client
       .completeStream(
         {
-          prompt: `${HUMAN_PROMPT}${prompt}${AI_PROMPT}`,
+          prompt: createPromptTemplate(prompt),
           stop_sequences: [HUMAN_PROMPT],
           max_tokens_to_sample: 200,
           model: "claude-v1",
@@ -34,5 +34,11 @@ const doAnthropic = async (prompt, thread) => {
 const sendResponse = async (result, thread) => {
   await thread.send({ embeds: [createEmbedWrapper('Anthropic', result)] });
 }
+
+const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 
+
+Question: ${prompt}
+
+${AI_PROMPT}`
 
 module.exports = { doAnthropic };

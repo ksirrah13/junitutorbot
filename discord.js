@@ -27,12 +27,12 @@ client.on('messageCreate', async msg => {
     const prompt = inputPrompt.replace('<@1072617337951367188>', '').trim();
     try {
       const thread = await msg.startThread({
-	name: prompt,
-	autoArchiveDuration: 60,
-	reason: 'Collecting responses from AIs',
-})
-    const [aiResult, wolframResult, anthropicResult]  = await Promise.all([doCompletion(prompt, thread), doWolfram(prompt, thread), doAnthropic(prompt, thread)]);
-    console.log('all results', {aiResult, wolframResult, anthropicResult})
+        name: prompt,
+        autoArchiveDuration: 60,
+        reason: 'Collecting responses from AIs',
+      })
+      const [aiResult, wolframResult, anthropicResult] = await Promise.allSettled([doCompletion(prompt, thread), doWolfram(prompt, thread), doAnthropic(prompt, thread)]);
+      console.log('all results', { aiResult, wolframResult, anthropicResult })
     } catch (error) {
       console.error(error);
       thread.send('error processing request');
@@ -40,6 +40,6 @@ client.on('messageCreate', async msg => {
   }
 });
 
-const startDiscord = () => client.login(token);
+const startDiscord = async () => { console.log('starting discord bot'); try { await client.login(token) } catch (error) { console.error(error) } };
 
 module.exports = { startDiscord };

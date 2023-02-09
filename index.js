@@ -8,7 +8,7 @@ app.get('/', (req, res) => {
   res.send('Hello Express app!')
 });
 
-app.listen(3000, () => {
-  startDiscord();
+app.listen(3000, async () => {
+  await startDiscord();
   console.log('server started');
 });

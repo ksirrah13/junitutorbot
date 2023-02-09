@@ -1,48 +1,61 @@
-const { createEmbedWrapper } = require('./discord_utils');
+const { createEmbedWrapper, createEmbedImages } = require('./discord_utils');
 
 const doWolfram = async (prompt, thread) => {
   try {
     const wolframApi = await import("@tanzanite/wolfram-alpha");
     const waApi = wolframApi.initializeClass(process.env.WOLFRAM_APP_ID);
     const queryResult = await waApi
-      .getFull({ input: prompt, includepodid: 'Result', output: 'json' });
+      .getFull({ input: prompt, includepodid: 'Result', output: 'json', podstate: 'Step-by-step solution' });
+    // const queryResult = await waApi
+    //   .getSimple(prompt);
+
 
     console.log('wolfram result', queryResult);
     let result = '';
     if (!queryResult.success) {
-      if (queryResult.didyoumeans) {
+      if (queryResult.didyoumeans && queryResult.didyoumeans.val) {
         result = `Did you mean ${queryResult.didyoumeans.val} ?`;
       } else {
         result = 'unsuccessful response from api';
       }
-      await sendResponse(result, thread);
+      await sendTextResponse(result, thread);
       return result;
     }
     if (queryResult && queryResult.pods) {
       const pods = queryResult.pods;
-      const output = pods
-        .map(pod => {
-          const subpodContent = pod.subpods
-            .map(subpod => { return subpod.plaintext })
-            .join("\n");
-          return subpodContent;
-        })
-        .join("\n");
-      console.log(output);
-      result = output;
+      if (pods.length !== 1) {
+        console.log(pods);
+        await sendTextResponse('too many pod results', thread);
+        return 'too many pod results';
+      }
+      const resultSubPods = pods[0].subpods;
+      const stepsPods = resultSubPods.filter(pod => pod.title === "Possible intermediate steps");
+      if (stepsPods.length === 1) {
+        const stepsText = stepsPods[0].plaintext;
+        await sendTextResponse(stepsText, thread);
+        return stepsText;
+      }
+      console.log('no intermeidate pods', resultSubPods);
+      // no step by step so get the first plain text pod response
+      const firstPod = resultSubPods[0];
+      const resultText = firstPod.plaintext;
+      await sendTextResponse(resultText, thread);
+      return resultText;
     }
-    else if (queryResult) {
-      result = `<img src="${queryResult}" alt="result">`;
-    }
-    await sendResponse(result, thread);
-    return result;
+    console.error(queryResult, 'no pods in response');
+    await sendTextResponse('no results in response', thread);
+    return 'no results in response';
   } catch (error) {
     console.error(error);
   }
 }
 
-const sendResponse = async (result, thread) => {
+const sendTextResponse = async (result, thread) => {
   await thread.send({ embeds: [createEmbedWrapper('Wolfram', result)] });
+}
+
+const sendImageResponse = async (images, thread) => {
+  await thread.send({ embeds: [createEmbedImages('Wolfram', images)] });
 }
 
 module.exports = { doWolfram };

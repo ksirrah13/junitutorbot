@@ -8,7 +8,7 @@ const openai = new OpenAIApi(configuration);
 
 const doCompletion = async (prompt, thread) => {
   try {
-    const enhancedPrompt = prompt;
+    const enhancedPrompt = createPromptTemplate(prompt);
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: enhancedPrompt,
@@ -26,5 +26,11 @@ const doCompletion = async (prompt, thread) => {
 const sendResponse = async (result, thread) => {
   await thread.send({ embeds: [createEmbedWrapper('OpenAI', result)] });
 }
+
+const createPromptTemplate = (prompt) => `Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 
+
+Question: ${prompt}
+
+Answer:`
 
 module.exports = { doCompletion }
