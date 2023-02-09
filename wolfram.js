@@ -1,4 +1,4 @@
-const doWolfram = async (prompt, msg) => {
+const doWolfram = async (prompt, thread) => {
   try {
     const wolframApi = await import("@tanzanite/wolfram-alpha");
     const waApi = wolframApi.initializeClass(process.env.WOLFRAM_APP_ID);
@@ -12,9 +12,9 @@ const doWolfram = async (prompt, msg) => {
       const output = pods
         .map(pod => {
           const subpodContent = pod.subpods
-            .map(subpod => { return `plaintext: ${subpod.plaintext}  <img src="${subpod.img.src}" alt="${subpod.img.alt}">` })
+            .map(subpod => { return subpod.plaintext })
             .join("\n");
-          return `<h2>${pod.title}</h2>\n${subpodContent}`;
+          return subpodContent;
         })
         .join("\n");
       console.log(output);
@@ -23,15 +23,15 @@ const doWolfram = async (prompt, msg) => {
     else if (queryResult) {
       result = `<img src="${queryResult}" alt="result">`;
     }
-    await sendResponse(result, msg);
+    await sendResponse(result, thread);
     return result;
   } catch (error) {
     console.error(error);
   }
 }
 
-const sendResponse = async (result, msg) => {
-  await msg.channel.send(`Wolfram: ${result}`)
+const sendResponse = async (result, thread) => {
+  await thread.send(`Wolfram: ${result}`)
 }
 
 module.exports = { doWolfram };

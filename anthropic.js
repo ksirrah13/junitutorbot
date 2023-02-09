@@ -1,7 +1,7 @@
 const { AI_PROMPT, Client, HUMAN_PROMPT } = require('@anthropic-ai/sdk');
 const client = new Client(process.env.ANTHROPIC_API_KEY);
 
-const doAnthropic = async (prompt, msg) => {
+const doAnthropic = async (prompt, thread) => {
   try {
     const completion = await client
       .completeStream(
@@ -22,15 +22,15 @@ const doAnthropic = async (prompt, msg) => {
       );
     console.log('completed sampling', completion);
     const result = completion.completion;
-    await sendResponse(result, msg);
+    await sendResponse(result, thread);
     return result;
   } catch (error) {
     console.error(error);
   }
 }
 
-const sendResponse = async (result, msg) => {
-  await msg.channel.send(`Anthropic: ${result}`);
+const sendResponse = async (result, thread) => {
+  await thread.send(`Anthropic: ${result}`);
 }
 
 module.exports = { doAnthropic };

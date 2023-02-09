@@ -26,11 +26,16 @@ client.on('messageCreate', async msg => {
     }
     const prompt = inputPrompt.replace('<@1072617337951367188>', '').trim();
     try {
-    const [aiResult, wolframResult, anthropicResult]  = await Promise.all([doCompletion(prompt, msg), doWolfram(prompt, msg), doAnthropic(prompt, msg)]);
+      const thread = await msg.startThread({
+	name: prompt,
+	autoArchiveDuration: 60,
+	reason: 'Collecting responses from AIs',
+})
+    const [aiResult, wolframResult, anthropicResult]  = await Promise.all([doCompletion(prompt, thread), doWolfram(prompt, thread), doAnthropic(prompt, thread)]);
     console.log('all results', {aiResult, wolframResult, anthropicResult})
     } catch (error) {
       console.error(error);
-      msg.channel.send('error processing request');
+      thread.send('error processing request');
     }
   }
 });
