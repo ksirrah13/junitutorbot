@@ -1,4 +1,6 @@
 const { AI_PROMPT, Client, HUMAN_PROMPT } = require('@anthropic-ai/sdk');
+const { createEmbedWrapper } = require('./discord_utils');
+
 const client = new Client(process.env.ANTHROPIC_API_KEY);
 
 const doAnthropic = async (prompt, thread) => {
@@ -30,7 +32,7 @@ const doAnthropic = async (prompt, thread) => {
 }
 
 const sendResponse = async (result, thread) => {
-  await thread.send(`Anthropic: ${result}`);
+  await thread.send({ embeds: [createEmbedWrapper('Anthropic', result)] });
 }
 
 module.exports = { doAnthropic };

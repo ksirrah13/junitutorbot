@@ -40,8 +40,6 @@ client.on('messageCreate', async msg => {
   }
 });
 
-  
-
 const startDiscord = () => client.login(token);
 
 module.exports = { startDiscord };

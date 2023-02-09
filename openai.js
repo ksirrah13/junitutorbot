@@ -1,4 +1,5 @@
 const { Configuration, OpenAIApi } = require("openai");
+const { createEmbedWrapper } = require('./discord_utils');
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,11 +8,11 @@ const openai = new OpenAIApi(configuration);
 
 const doCompletion = async (prompt, thread) => {
   try {
-    const enhancedPrompt = `Solve ${prompt} ### Answer:`;
+    const enhancedPrompt = prompt;
     const completion = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: enhancedPrompt,
-      max_tokens: 200,
+      max_tokens: 1000,
     });
     console.log('completion result', { prompt: enhancedPrompt, completion: completion.data.choices[0].text });
     const result = completion.data.choices[0].text;
@@ -23,7 +24,7 @@ const doCompletion = async (prompt, thread) => {
 }
 
 const sendResponse = async (result, thread) => {
-  await thread.send(`OpenAi: ${result}`)
+  await thread.send({ embeds: [createEmbedWrapper('OpenAI', result)] });
 }
 
 module.exports = { doCompletion }

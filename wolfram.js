@@ -1,3 +1,5 @@
+const { createEmbedWrapper } = require('./discord_utils');
+
 const doWolfram = async (prompt, thread) => {
   try {
     const wolframApi = await import("@tanzanite/wolfram-alpha");
@@ -7,6 +9,15 @@ const doWolfram = async (prompt, thread) => {
 
     console.log('wolfram result', queryResult);
     let result = '';
+    if (!queryResult.success) {
+      if (queryResult.didyoumeans) {
+        result = `Did you mean ${queryResult.didyoumeans.val} ?`;
+      } else {
+        result = 'unsuccessful response from api';
+      }
+      await sendResponse(result, thread);
+      return result;
+    }
     if (queryResult && queryResult.pods) {
       const pods = queryResult.pods;
       const output = pods
@@ -31,7 +42,7 @@ const doWolfram = async (prompt, thread) => {
 }
 
 const sendResponse = async (result, thread) => {
-  await thread.send(`Wolfram: ${result}`)
+  await thread.send({ embeds: [createEmbedWrapper('Wolfram', result)] });
 }
 
 module.exports = { doWolfram };
