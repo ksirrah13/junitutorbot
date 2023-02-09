@@ -5,10 +5,24 @@ const createEmbedWrapper = (title, results) => {
     .setColor(0x0099FF)
     .setTitle(title)
     .addFields(
-      { name: 'Results', value: results },
+      createFields(results),
     )
     .setTimestamp()
   return embed;
+}
+
+const MAX_FIELD_LENGTH = 1024
+const createFields = text => {
+  if (text.length <= MAX_FIELD_LENGTH) {
+    return { name: 'Results', value: text };
+  }
+  // naive split which doesn't break on words or anything
+  const chunkedFields = chunkString(text, MAX_FIELD_LENGTH);
+  return chunkedFields.map(value => ({ name: 'Results', value }));
+}
+
+const chunkString = (str, length) => {
+  return str.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
 }
 
 const createEmbedImages = (title, images) => {

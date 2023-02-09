@@ -6,6 +6,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+// TODO figure out why sometimes open ai refuses to answer or hangs
 const doCompletion = async (prompt, thread) => {
   try {
     const enhancedPrompt = createPromptTemplate(prompt);

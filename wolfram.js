@@ -1,5 +1,8 @@
 const { createEmbedWrapper, createEmbedImages } = require('./discord_utils');
 
+
+// TODO add a precheck that verifies wolfram can answer the question
+// https://products.wolframalpha.com/query-recognizer/documentation
 const doWolfram = async (prompt, thread) => {
   try {
     const wolframApi = await import("@tanzanite/wolfram-alpha");
