@@ -3,6 +3,7 @@ import { doCompletion } from './openai.js';
 import { doWolfram } from './wolfram.js';
 import { doAnthropic } from './anthropic.js';
 import { recordNewPrompt } from './data_storage.js';
+import { createMoreHelpBar } from './discord_utils.js';
 
 const client = new Client({
   intents: [
@@ -37,6 +38,7 @@ client.on('messageCreate', async msg => {
       const [aiResult, wolframResult, anthropicResult] = await Promise.allSettled([doCompletion(prompt, thread), doWolfram(prompt, thread), doAnthropic(prompt, thread)]);
       console.log('all results', { aiResult, wolframResult, anthropicResult });
       await recordNewPrompt({ input: prompt, prompt, responses: [{ model: 'anthropic', response: anthropicResult.value }, { model: 'openai', response: aiResult.value }, { model: 'wolfram', response: wolframResult.value }] });
+      await thread.send(createMoreHelpBar());
     } catch (error) {
       console.error(error);
       thread.send('error processing request');

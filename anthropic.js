@@ -1,10 +1,12 @@
 import { AI_PROMPT, Client, HUMAN_PROMPT } from '@anthropic-ai/sdk';
 import { createEmbedWrapper } from './discord_utils.js';
 
-const client = new Client(process.env.ANTHROPIC_API_KEY);
 
 export const doAnthropic = async (prompt, thread) => {
   try {
+    // how to enable this outside of the method call? process env not yet set
+    const client = new Client(process.env.ANTHROPIC_API_KEY);
+
     const completion = await client
       .completeStream(
         {
@@ -32,7 +34,7 @@ export const doAnthropic = async (prompt, thread) => {
 }
 
 const sendResponse = async (result, thread) => {
-  await thread.send({ embeds: [createEmbedWrapper('Anthropic', result)] });
+  await thread.send(createEmbedWrapper('Anthropic', result));
 }
 
 const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 

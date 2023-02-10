@@ -54,7 +54,7 @@ export const doWolfram = async (prompt, thread) => {
 }
 
 const sendTextResponse = async (result, thread) => {
-  await thread.send({ embeds: [createEmbedWrapper('Wolfram', result)] });
+  await thread.send(createEmbedWrapper('Wolfram', result));
 }
 
 const sendImageResponse = async (images, thread) => {
