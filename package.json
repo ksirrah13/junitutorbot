@@ -22,5 +22,8 @@
     "node-fetch": "^3.2.6",
     "openai": "^3.1.0",
     "wolfram-alpha-api": "^0.2.1"
+  },
+  "volta": {
+    "node": "18.14.0"
   }
 }

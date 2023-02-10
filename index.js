@@ -2,6 +2,9 @@ import express from 'express';
 import { startDiscord } from './bot.js';
 import { connectDb } from './data_storage.js';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const app = express();
 
 app.get('/', (req, res) => {

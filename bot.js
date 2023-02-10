@@ -11,7 +11,8 @@ const client = new Client({
   ]
 })
 
-const token = process.env['DISCORD_BOT_SECRET']
+const BOT_TOKEN = process.env['DISCORD_BOT_SECRET'];
+const BOT_MENTION_ID = process.env['BOT_MENTION_ID'];
 
 client.on('ready', () => {
   console.log("I'm in");
@@ -25,7 +26,7 @@ client.on('messageCreate', async msg => {
       console.log('no prompt input');
       return;
     }
-    const prompt = inputPrompt.replace('<@1072617337951367188>', '').trim();
+    const prompt = inputPrompt.replace(`<@${BOT_MENTION_ID}>`, '').trim();
     const thread = await msg.startThread({
       name: prompt,
       autoArchiveDuration: 60,
@@ -46,7 +47,7 @@ client.on('messageCreate', async msg => {
 export const startDiscord = async () => {
   console.log('starting discord bot');
   try {
-    await client.login(token)
+    await client.login(BOT_TOKEN)
   } catch (error) {
     console.error(error)
   }
