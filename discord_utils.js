@@ -7,8 +7,7 @@ export const createEmbedWrapper = (title, results) => {
     .setTitle(title)
     .addFields(
       createFields(results),
-    )
-    .setTimestamp()
+    );
   return {embeds: [resultsEmbed, createRatingEmbed()], components: [createRatingsComponents()]};
 }
 

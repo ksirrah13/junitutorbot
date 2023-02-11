@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
+import { ResponseResultSchema } from './response_result.js';
 
-const schema = new mongoose.Schema({
+const PromptSchema = new mongoose.Schema({
+    user: String,
     input: String,
-    prompt: String,
-    responses: [{model: String, response: String}],
-  });
+    responses: [ResponseResultSchema],
+    answeredQuestion: Boolean,
+    requestedHelp: Boolean,
+    bestAnswerSelected: String,
+  }, {timestamps: true});
   
-export const Prompt = mongoose.model('Prompt', schema);
+export const Prompt = mongoose.model('Prompt', PromptSchema);

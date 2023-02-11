@@ -1,16 +1,18 @@
 import { AI_PROMPT, Client, HUMAN_PROMPT } from '@anthropic-ai/sdk';
+import { recordNewResponse } from "./data_storage.js";
 import { createEmbedWrapper } from './discord_utils.js';
 
 
-export const doAnthropic = async (prompt, thread) => {
+export const doAnthropic = async (prompt, thread, promptModel) => {
   try {
     // how to enable this outside of the method call? process env not yet set
     const client = new Client(process.env.ANTHROPIC_API_KEY);
 
+    const enhancedPrompt = createPromptTemplate(prompt);
     const completion = await client
       .completeStream(
         {
-          prompt: createPromptTemplate(prompt),
+          prompt: enhancedPrompt,
           stop_sequences: [HUMAN_PROMPT],
           max_tokens_to_sample: 1000,
           model: "claude-v1",
@@ -25,6 +27,7 @@ export const doAnthropic = async (prompt, thread) => {
         }
       );
     const result = completion.completion;
+    await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptModel: promptModel});
     await sendResponse(result, thread);
     return result;
   } catch (error) {

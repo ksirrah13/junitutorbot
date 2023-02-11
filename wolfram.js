@@ -1,10 +1,11 @@
 import { createEmbedWrapper, createEmbedImages } from './discord_utils.js';
+import { recordNewResponse } from "./data_storage.js";
 import WolframApi from '@tanzanite/wolfram-alpha';
 
 
 // TODO add a precheck that verifies wolfram can answer the question
 // https://products.wolframalpha.com/query-recognizer/documentation
-export const doWolfram = async (prompt, thread) => {
+export const doWolfram = async (prompt, thread, promptModel) => {
   try {
     const waApi = WolframApi(process.env.WOLFRAM_APP_ID);
     const queryResult = await waApi
@@ -20,6 +21,7 @@ export const doWolfram = async (prompt, thread) => {
         result = 'unsuccessful response from api';
       }
       console.log('wolfram queryResult', queryResult);
+      await recordNewResponse({prompt, response: result, source: 'wolfram', parentPromptModel: promptModel});
       await sendTextResponse(result, thread);
       return result;
     }
@@ -34,6 +36,7 @@ export const doWolfram = async (prompt, thread) => {
       const stepsPods = resultSubPods.filter(pod => pod.title === "Possible intermediate steps");
       if (stepsPods.length === 1) {
         const stepsText = stepsPods[0].plaintext;
+        await recordNewResponse({prompt, response: stepsText, source: 'wolfram', parentPromptModel: promptModel});
         await sendTextResponse(stepsText, thread);
         return stepsText;
       }
@@ -41,10 +44,12 @@ export const doWolfram = async (prompt, thread) => {
       // no step by step so get the first plain text pod response
       const firstPod = resultSubPods[0];
       const resultText = firstPod.plaintext;
+      await recordNewResponse({prompt, response: resultText, source: 'wolfram', parentPromptModel: promptModel});
       await sendTextResponse(resultText, thread);
       return resultText;
     }
     console.error('no pods in response', queryResult);
+    await recordNewResponse({prompt, response: 'no results in response', source: 'wolfram', parentPromptModel: promptModel});
     await sendTextResponse('no results in response', thread);
     return 'no results in response';
   } catch (error) {

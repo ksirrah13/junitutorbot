@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Prompt } from './models/prompt.js';
 import dotenv from 'dotenv';
+import { ResponseResult } from './models/response_result.js';
 dotenv.config();
 
 export const connectDb = async () => {
@@ -14,6 +15,12 @@ export const connectDb = async () => {
   }
 }
 
-export const recordNewPrompt = async ({ input, prompt, responses }) => {
-  await Prompt.create({ input, prompt, responses })
+export const recordNewResponse = async ({ prompt, response, source, parentPromptModel }) => {
+  const newResponse = new ResponseResult({ prompt, response, source });
+  parentPromptModel.responses.push(newResponse);
+  await parentPromptModel.save();
+}
+
+export const startNewPrompt = async ({ user, input }) => {
+  return Prompt.create({ user, input })
 }

@@ -1,10 +1,11 @@
 import { Configuration, OpenAIApi } from "openai";
+import { recordNewResponse } from "./data_storage.js";
 import { createEmbedWrapper } from './discord_utils.js';
 
 
 
 // TODO figure out why sometimes open ai refuses to answer or hangs
-export const doCompletion = async (prompt, thread) => {
+export const doCompletion = async (prompt, thread, promptModel) => {
   try {
     // how to enable this outside of the method call? process env not yet set
     const configuration = new Configuration({
@@ -19,6 +20,7 @@ export const doCompletion = async (prompt, thread) => {
       max_tokens: 1000,
     });
     const result = completion.data.choices[0].text;
+    await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'openai', parentPromptModel: promptModel});
     await sendResponse(result, thread);
     return result;
   } catch (error) {
