@@ -20,8 +20,8 @@ export const doCompletion = async (prompt, thread, promptModel) => {
       max_tokens: 1000,
     });
     const result = completion.data.choices[0].text;
-    await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'openai', parentPromptModel: promptModel});
-    await sendResponse(result, thread);
+    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'openai', parentPromptModel: promptModel});
+    await sendResponse(result, thread, responseId);
     return result;
   } catch (error) {
     console.error(error);
@@ -29,8 +29,8 @@ export const doCompletion = async (prompt, thread, promptModel) => {
   }
 }
 
-const sendResponse = async (result, thread) => {
-  await thread.send(createEmbedWrapper('OpenAI', result));
+const sendResponse = async (result, thread, responseId) => {
+  await thread.send(createEmbedWrapper('OpenAI', result, responseId));
 }
 
 const createPromptTemplate = (prompt) => `Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 

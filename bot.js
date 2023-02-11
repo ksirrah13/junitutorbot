@@ -1,9 +1,9 @@
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { doCompletion } from './openai.js';
 import { doWolfram } from './wolfram.js';
 import { doAnthropic } from './anthropic.js';
-import { recordNewResponse, startNewPrompt } from './data_storage.js';
-import { createMoreHelpBar } from './discord_utils.js';
+import { startNewPrompt } from './data_storage.js';
+import { createMoreHelpBar, getActionAndTargetFromId } from './discord_utils.js';
 
 const client = new Client({
   intents: [
@@ -15,12 +15,12 @@ const client = new Client({
 const BOT_TOKEN = process.env['DISCORD_BOT_SECRET'];
 const BOT_MENTION_ID = process.env['BOT_MENTION_ID'];
 
-client.on('ready', () => {
+client.on(Events.ClientReady, () => {
   console.log("I'm in");
   console.log(client.user.username);
 });
 
-client.on('messageCreate', async msg => {
+client.on(Events.MessageCreate, async msg => {
   if (msg.author.id != client.user.id) {
     const inputPrompt = msg.content;
     if (!inputPrompt) {
@@ -39,6 +39,7 @@ client.on('messageCreate', async msg => {
           doCompletion(prompt, thread, newPrompt), 
           doWolfram(prompt, thread, newPrompt), 
           doAnthropic(prompt, thread, newPrompt)]);
+      await newPrompt.save();
       console.log('all results', { aiResult, wolframResult, anthropicResult });
       await thread.send(createMoreHelpBar());
     } catch (error) {
@@ -46,6 +47,26 @@ client.on('messageCreate', async msg => {
       thread.send('error processing request');
     }
   }
+});
+
+client.on(Events.InteractionCreate, interaction => {
+	if (!interaction.isButton()) return;
+
+  const [action, target] = getActionAndTargetFromId(interaction.customId);
+  switch (action) {
+    case 'thumbs-up': {
+      console.log('recording vote for', target);
+      break;
+    }
+    case 'thumbs-down': {
+      console.log('recording vote for', target);
+      break;
+    }
+    default: {
+      console.log('error finding action', action);
+    }
+  }
+
 });
 
 export const startDiscord = async () => {

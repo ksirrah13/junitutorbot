@@ -27,8 +27,8 @@ export const doAnthropic = async (prompt, thread, promptModel) => {
         }
       );
     const result = completion.completion;
-    await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptModel: promptModel});
-    await sendResponse(result, thread);
+    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptModel: promptModel});
+    await sendResponse(result, thread, responseId);
     return result;
   } catch (error) {
     console.error(error);
@@ -36,8 +36,8 @@ export const doAnthropic = async (prompt, thread, promptModel) => {
   }
 }
 
-const sendResponse = async (result, thread) => {
-  await thread.send(createEmbedWrapper('Anthropic', result));
+const sendResponse = async (result, thread, responseId) => {
+  await thread.send(createEmbedWrapper('Anthropic', result, responseId));
 }
 
 const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 

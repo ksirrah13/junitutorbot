@@ -18,7 +18,7 @@ export const connectDb = async () => {
 export const recordNewResponse = async ({ prompt, response, source, parentPromptModel }) => {
   const newResponse = new ResponseResult({ prompt, response, source });
   parentPromptModel.responses.push(newResponse);
-  await parentPromptModel.save();
+  return newResponse._id.toString();
 }
 
 export const startNewPrompt = async ({ user, input }) => {
