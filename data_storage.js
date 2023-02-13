@@ -23,7 +23,7 @@ export const recordNewResponse = async ({ prompt, response, source, parentPrompt
 }
 
 export const startNewPrompt = async ({ user, input }) => {
-  const { _id } = await Prompt.create({ user, input })
+  const { _id } = await Prompt.create({ user, input });
   return _id;
 }
 
@@ -34,5 +34,6 @@ export const Rating = {
 
 export const incrementRatingCount = async ({responseId, rating}) => {
   const ratingKey = `correctAnswer.${rating}`;
-  return ResponseResult.findByIdAndUpdate(responseId, {$inc: {[ratingKey] : 1}});
+  const {correctAnswer} = await ResponseResult.findByIdAndUpdate(responseId, {$inc: {[ratingKey] : 1}}, {new: true}).lean().exec();
+  return correctAnswer;
 }
