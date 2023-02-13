@@ -3,7 +3,7 @@ import { doCompletion } from './openai.js';
 import { doWolfram } from './wolfram.js';
 import { doAnthropic } from './anthropic.js';
 import { incrementRatingCount, startNewPrompt, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './data_storage.js';
-import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId } from './discord_utils.js';
+import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId, trimToLength } from './discord_utils.js';
 
 const client = new Client({
   intents: [
@@ -29,7 +29,7 @@ client.on(Events.MessageCreate, async msg => {
     }
     const prompt = inputPrompt.replace(`<@${BOT_MENTION_ID}>`, '').trim();
     const thread = await msg.startThread({
-      name: prompt,
+      name: trimToLength(prompt),
       autoArchiveDuration: 60,
       reason: 'Collecting responses from AIs',
     })
