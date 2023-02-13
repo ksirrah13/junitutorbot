@@ -37,3 +37,17 @@ export const incrementRatingCount = async ({responseId, rating}) => {
   const {correctAnswer} = await ResponseResult.findByIdAndUpdate(responseId, {$inc: {[ratingKey] : 1}}, {new: true}).lean().exec();
   return correctAnswer;
 }
+
+export const updateSelectedAnswerSource = async ({promptId, source}) => {
+  return Prompt.findByIdAndUpdate(promptId, {bestAnswerSelected: source}, {new: true}).lean().exec();
+}
+
+export const AnswerResult = {
+  Answered: 'answered',
+  RequestHelp: 'requestHelp'
+}
+
+export const setPromptAnsweredResult = async ({promptId, answerResult}) => {
+  const updateResult = answerResult === AnswerResult.Answered ? {answeredQuestion: true, requestedHelp: false} : {answeredQuestion: false, requestedHelp: true};
+  return Prompt.findByIdAndUpdate(promptId, updateResult, {new: true}).lean().exec();
+}
