@@ -3,7 +3,7 @@ import { doCompletion } from './openai.js';
 import { doWolfram } from './wolfram.js';
 import { doAnthropic } from './anthropic.js';
 import { incrementRatingCount, startNewPrompt, Rating } from './data_storage.js';
-import { createMoreHelpBar, getActionAndTargetFromId } from './discord_utils.js';
+import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId } from './discord_utils.js';
 
 const client = new Client({
   intents: [
@@ -48,20 +48,20 @@ client.on(Events.MessageCreate, async msg => {
   }
 });
 
-client.on(Events.InteractionCreate, interaction => {
+client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isButton()) return;
 
   const [action, target] = getActionAndTargetFromId(interaction.customId);
   console.log('executing interaction', {action, target});
   switch (action) {
     case 'thumbs-up': {
-      incrementRatingCount({responseId: target, rating: Rating.Yes});
-      interaction.reply({content: 'Voted Yes', ephemeral: true});
+      const counts = await incrementRatingCount({responseId: target, rating: Rating.Yes});
+      interaction.update({components: [createRatingsComponents(target, counts)]})
       break;
     }
     case 'thumbs-down': {
-      incrementRatingCount({responseId: target, rating: Rating.No});
-      interaction.reply({content: 'Voted No', ephemeral: true});
+      const counts = await incrementRatingCount({responseId: target, rating: Rating.No});
+      interaction.update({components: [createRatingsComponents(target, counts)]})
       break;
     }
     default: {

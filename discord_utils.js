@@ -42,17 +42,17 @@ export const createEmbedImages = (title, images) => {
   return embed;
 }
 
-export const createRatingsComponents = (responseId) => {
+export const createRatingsComponents = (responseId, voteCounts) => {
   const thumbsUp = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary)
     // .setEmoji({id: '1073723550084640942'}) //thumbs up
     .setCustomId(createCustomIdForTarget('thumbs-up', responseId))
-    .setLabel('Yes!') 
+    .setLabel(`Yes! (${voteCounts?.yes ?? 0})`) 
   const thumbsDown = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary)
     // .setEmoji({name: 'thumbsdown'})  //thumbs down
     .setCustomId(createCustomIdForTarget('thumbs-down', responseId))
-    .setLabel('No')
+    .setLabel(`No (${voteCounts?.no ?? 0})`)
   const actionRow = new ActionRowBuilder().addComponents([thumbsUp, thumbsDown]);
   return actionRow;
 }
