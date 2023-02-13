@@ -99,3 +99,10 @@ export const getActionAndTargetFromId = (customId) => {
 export const createCustomIdForTarget = (action, target) => {
   return `${action}${DISCORD_ACTION_SEPERATOR}${target}`
 }
+
+export const trimToLength = (input, maxLength = 100) => {
+  if (input.length < maxLength) {
+    return input;
+  }
+  return `${input.substring(0, maxLength - 3)}...`
+}
