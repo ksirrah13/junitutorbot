@@ -5,7 +5,7 @@ import WolframApi from '@tanzanite/wolfram-alpha';
 
 // TODO add a precheck that verifies wolfram can answer the question
 // https://products.wolframalpha.com/query-recognizer/documentation
-export const doWolfram = async (prompt, thread, promptModel) => {
+export const doWolfram = async (prompt, thread, parentPromptId) => {
   try {
     const waApi = WolframApi(process.env.WOLFRAM_APP_ID);
     const queryResult = await waApi
@@ -21,7 +21,7 @@ export const doWolfram = async (prompt, thread, promptModel) => {
         result = 'unsuccessful response from api';
       }
       console.log('wolfram queryResult', queryResult);
-      const responseId = await recordNewResponse({prompt, response: result, source: 'wolfram', parentPromptModel: promptModel});
+      const responseId = await recordNewResponse({prompt, response: result, source: 'wolfram', parentPromptId});
       await sendTextResponse(result, thread, responseId);
       return result;
     }
@@ -36,7 +36,7 @@ export const doWolfram = async (prompt, thread, promptModel) => {
       const stepsPods = resultSubPods.filter(pod => pod.title === "Possible intermediate steps");
       if (stepsPods.length === 1) {
         const stepsText = stepsPods[0].plaintext;
-        const responseId = await recordNewResponse({prompt, response: stepsText, source: 'wolfram', parentPromptModel: promptModel});
+        const responseId = await recordNewResponse({prompt, response: stepsText, source: 'wolfram', parentPromptId});
         await sendTextResponse(stepsText, thread, responseId);
         return stepsText;
       }
@@ -44,12 +44,12 @@ export const doWolfram = async (prompt, thread, promptModel) => {
       // no step by step so get the first plain text pod response
       const firstPod = resultSubPods[0];
       const resultText = firstPod.plaintext;
-      const responseId = await recordNewResponse({prompt, response: resultText, source: 'wolfram', parentPromptModel: promptModel});
+      const responseId = await recordNewResponse({prompt, response: resultText, source: 'wolfram', parentPromptId});
       await sendTextResponse(resultText, thread, responseId);
       return resultText;
     }
     console.error('no pods in response', queryResult);
-    const responseId = await recordNewResponse({prompt, response: 'no results in response', source: 'wolfram', parentPromptModel: promptModel});
+    const responseId = await recordNewResponse({prompt, response: 'no results in response', source: 'wolfram', parentPromptId});
     await sendTextResponse('no results in response', thread, responseId);
     return 'no results in response';
   } catch (error) {

@@ -3,7 +3,7 @@ import { recordNewResponse } from "./data_storage.js";
 import { createEmbedWrapper } from './discord_utils.js';
 
 
-export const doAnthropic = async (prompt, thread, promptModel) => {
+export const doAnthropic = async (prompt, thread, parentPromptId) => {
   try {
     // how to enable this outside of the method call? process env not yet set
     const client = new Client(process.env.ANTHROPIC_API_KEY);
@@ -27,7 +27,7 @@ export const doAnthropic = async (prompt, thread, promptModel) => {
         }
       );
     const result = completion.completion;
-    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptModel: promptModel});
+    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptId});
     await sendResponse(result, thread, responseId);
     return result;
   } catch (error) {
