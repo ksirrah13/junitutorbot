@@ -5,7 +5,7 @@ import { createEmbedWrapper } from './discord_utils.js';
 
 
 // TODO figure out why sometimes open ai refuses to answer or hangs
-export const doCompletion = async (prompt, thread, promptModel) => {
+export const doCompletion = async (prompt, thread, parentPromptId) => {
   try {
     // how to enable this outside of the method call? process env not yet set
     const configuration = new Configuration({
@@ -20,7 +20,7 @@ export const doCompletion = async (prompt, thread, promptModel) => {
       max_tokens: 1000,
     });
     const result = completion.data.choices[0].text;
-    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'openai', parentPromptModel: promptModel});
+    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'openai', parentPromptId});
     await sendResponse(result, thread, responseId);
     return result;
   } catch (error) {

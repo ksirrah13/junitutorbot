@@ -15,12 +15,13 @@ export const connectDb = async () => {
   }
 }
 
-export const recordNewResponse = async ({ prompt, response, source, parentPromptModel }) => {
-  const newResponse = new ResponseResult({ prompt, response, source });
-  parentPromptModel.responses.push(newResponse);
-  return newResponse._id.toString();
+export const recordNewResponse = async ({ prompt, response, source, parentPromptId }) => {
+  const { _id } = await ResponseResult.create({ prompt, response, source });
+  await Prompt.findByIdAndUpdate(parentPromptId, { $push: { responses:  _id }});
+  return _id.toString();
 }
 
 export const startNewPrompt = async ({ user, input }) => {
-  return Prompt.create({ user, input })
+  const { _id } = await Prompt.create({ user, input })
+  return _id;
 }

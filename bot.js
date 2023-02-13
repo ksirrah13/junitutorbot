@@ -34,12 +34,11 @@ client.on(Events.MessageCreate, async msg => {
       reason: 'Collecting responses from AIs',
     })
     try {
-      const newPrompt = await startNewPrompt({user: msg.author.id, input: prompt});
+      const newPromptId = await startNewPrompt({user: msg.author.id, input: prompt});
       const [aiResult, wolframResult, anthropicResult] = await Promise.allSettled([
-          doCompletion(prompt, thread, newPrompt), 
-          doWolfram(prompt, thread, newPrompt), 
-          doAnthropic(prompt, thread, newPrompt)]);
-      await newPrompt.save();
+          doCompletion(prompt, thread, newPromptId),
+          doWolfram(prompt, thread, newPromptId),
+          doAnthropic(prompt, thread, newPromptId)]);
       console.log('all results', { aiResult, wolframResult, anthropicResult });
       await thread.send(createMoreHelpBar());
     } catch (error) {
