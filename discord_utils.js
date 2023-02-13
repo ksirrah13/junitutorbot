@@ -1,5 +1,6 @@
 import { ActionRowBuilder } from '@discordjs/builders';
 import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { AnswerResult } from './data_storage.js';
 
 export const createEmbedWrapper = (title, results, responseId) => {
   const resultsEmbed = new EmbedBuilder()
@@ -57,9 +58,9 @@ export const createRatingsComponents = (responseId, voteCounts) => {
   return actionRow;
 }
 
-export const createMoreHelpBar = () => {
+export const createMoreHelpBar = (promptId, answerResult) => {
   const bestSolution = new StringSelectMenuBuilder()
-  .setCustomId('best-solution')
+  .setCustomId(createCustomIdForTarget('selected-best', promptId))
   .setPlaceholder('Which was the best solution?')
   .addOptions(
     {
@@ -77,15 +78,15 @@ export const createMoreHelpBar = () => {
   );
   const foundAnswer = new ButtonBuilder()
   .setStyle(ButtonStyle.Success)
-  .setCustomId('found-answer')
-  .setLabel('I found my answer!')
+  .setCustomId(createCustomIdForTarget('answered', promptId))
+  .setLabel(`${answerResult === AnswerResult.Answered ? '** ' : ''}I found my answer!`)
   const needMoreHelp = new ButtonBuilder()
     .setStyle(ButtonStyle.Danger)
-    .setCustomId('more-help')
-    .setLabel('I need more help!')
+    .setCustomId(createCustomIdForTarget('request-help', promptId))
+    .setLabel(`${answerResult === AnswerResult.RequestHelp ? '** ' : ''}I need more help!`)
   const responseRow = new ActionRowBuilder().addComponents([foundAnswer, needMoreHelp]);
   const solutionRow = new ActionRowBuilder().addComponents([bestSolution]);
-  return {content: "Did you find the answer you wanted?", components: [solutionRow, responseRow], ephemeral: true};
+  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [solutionRow, responseRow], ephemeral: true};
 }
 
 const DISCORD_ACTION_SEPERATOR = ':';

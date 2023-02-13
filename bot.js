@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { doCompletion } from './openai.js';
 import { doWolfram } from './wolfram.js';
 import { doAnthropic } from './anthropic.js';
-import { incrementRatingCount, startNewPrompt, Rating } from './data_storage.js';
+import { incrementRatingCount, startNewPrompt, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './data_storage.js';
 import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId } from './discord_utils.js';
 
 const client = new Client({
@@ -40,7 +40,7 @@ client.on(Events.MessageCreate, async msg => {
           doWolfram(prompt, thread, newPromptId),
           doAnthropic(prompt, thread, newPromptId)]);
       console.log('all results', { aiResult, wolframResult, anthropicResult });
-      await thread.send(createMoreHelpBar());
+      await thread.send(createMoreHelpBar(newPromptId));
     } catch (error) {
       console.error(error);
       thread.send('error processing request');
@@ -49,7 +49,7 @@ client.on(Events.MessageCreate, async msg => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isButton()) return;
+	if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
   const [action, target] = getActionAndTargetFromId(interaction.customId);
   console.log('executing interaction', {action, target});
@@ -62,6 +62,21 @@ client.on(Events.InteractionCreate, async interaction => {
     case 'thumbs-down': {
       const counts = await incrementRatingCount({responseId: target, rating: Rating.No});
       interaction.update({components: [createRatingsComponents(target, counts)]})
+      break;
+    }
+    case 'answered':  {
+      await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.Answered});
+      interaction.update(createMoreHelpBar(target, AnswerResult.Answered))
+      break;
+    }
+    case 'request-help':  {
+      await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.RequestHelp});
+      interaction.update(createMoreHelpBar(target, AnswerResult.RequestHelp))
+      break;
+    }
+    case 'selected-best':  {
+      await updateSelectedAnswerSource({promptId: target, source: interaction.values[0]});
+      interaction.reply({content: `Selected solution: ${interaction.values[0]}`, ephemeral: true});
       break;
     }
     default: {
