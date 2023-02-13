@@ -10,6 +10,7 @@ export const connectDb = async () => {
     // suppress warnings
     mongoose.set('strictQuery', false);
     await mongoose.connect(process.env.DB_URI);
+    console.log('connected to db');
   } catch (e) {
     console.error('error connecting to db', e);
   }
@@ -24,4 +25,14 @@ export const recordNewResponse = async ({ prompt, response, source, parentPrompt
 export const startNewPrompt = async ({ user, input }) => {
   const { _id } = await Prompt.create({ user, input })
   return _id;
+}
+
+export const Rating = {
+  Yes: 'yes',
+  No: 'no',
+}
+
+export const incrementRatingCount = async ({responseId, rating}) => {
+  const ratingKey = `correctAnswer.${rating}`;
+  return ResponseResult.findByIdAndUpdate(responseId, {$inc: {[ratingKey] : 1}});
 }

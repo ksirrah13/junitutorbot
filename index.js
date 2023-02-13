@@ -13,6 +13,6 @@ app.get('/', (req, res) => {
 
 app.listen(3000, async () => {
   await startDiscord();
-  connectDb();
+  await connectDb();
   console.log('server started');
 });

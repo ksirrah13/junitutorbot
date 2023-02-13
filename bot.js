@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits, Events } from 'discord.js';
 import { doCompletion } from './openai.js';
 import { doWolfram } from './wolfram.js';
 import { doAnthropic } from './anthropic.js';
-import { startNewPrompt } from './data_storage.js';
+import { incrementRatingCount, startNewPrompt, Rating } from './data_storage.js';
 import { createMoreHelpBar, getActionAndTargetFromId } from './discord_utils.js';
 
 const client = new Client({
@@ -52,13 +52,16 @@ client.on(Events.InteractionCreate, interaction => {
 	if (!interaction.isButton()) return;
 
   const [action, target] = getActionAndTargetFromId(interaction.customId);
+  console.log('executing interaction', {action, target});
   switch (action) {
     case 'thumbs-up': {
-      console.log('recording vote for', target);
+      incrementRatingCount({responseId: target, rating: Rating.Yes});
+      interaction.reply({content: 'Voted Yes', ephemeral: true});
       break;
     }
     case 'thumbs-down': {
-      console.log('recording vote for', target);
+      incrementRatingCount({responseId: target, rating: Rating.No});
+      interaction.reply({content: 'Voted No', ephemeral: true});
       break;
     }
     default: {
