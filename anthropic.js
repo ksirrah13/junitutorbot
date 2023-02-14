@@ -27,7 +27,7 @@ export const doAnthropic = async (prompt, thread, parentPromptId) => {
         }
       );
     const result = completion.completion;
-    const responseId = await recordNewResponse({prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptId});
+    const responseId = await recordNewResponse({ prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptId });
     await sendResponse(result, thread, responseId);
     return result;
   } catch (error) {
@@ -40,8 +40,10 @@ const sendResponse = async (result, thread, responseId) => {
   await thread.send(createEmbedWrapper('Anthropic', result, responseId));
 }
 
-const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 
+// const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 
 
-Question: ${prompt}
+// Question: ${prompt}
 
-${AI_PROMPT}`
+// ${AI_PROMPT}`
+
+const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}${prompt}${AI_PROMPT}`;
