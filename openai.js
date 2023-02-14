@@ -18,6 +18,7 @@ export const doCompletion = async (prompt, thread, parentPromptId) => {
       model: "text-davinci-003",
       prompt: enhancedPrompt,
       max_tokens: 1000,
+      stop: [HUMAN]
     });
     const result = completion.data.choices[0].text;
     const responseId = await recordNewResponse({ prompt: enhancedPrompt, response: result, source: 'openai', parentPromptId });
@@ -39,4 +40,7 @@ const sendResponse = async (result, thread, responseId) => {
 
 // Answer:`
 
-const createPromptTemplate = (prompt) => prompt;
+const HUMAN = '\n\nHuman:';
+const AI = '\n\nAssistant:';
+
+const createPromptTemplate = (prompt) => `${HUMAN}${prompt}${AI}`;
