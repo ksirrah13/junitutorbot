@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "npm run build && node dist/index.js",
+    "build": "tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,10 +21,13 @@
     "express": "^4.18.2",
     "mongoose": "^6.9.1",
     "node-fetch": "^3.2.6",
-    "openai": "^3.1.0",
-    "wolfram-alpha-api": "^0.2.1"
+    "openai": "^3.1.0"
   },
   "volta": {
     "node": "18.14.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "typescript": "^4.9.5"
   }
 }

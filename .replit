@@ -1,15 +1,16 @@
-entrypoint = "index.js"
+run = ['npm', 'start']
+entrypoint = "src/index.ts"
 
 hidden = [".config", "package-lock.json"]
 
-[interpreter]
-command = [
-    "prybar-nodejs",
-    "-q",
-    "--ps1",
-    "\u0001\u001b[33m\u0002\u0001\u001b[00m\u0002 ",
-    "-i"
-]
+# [interpreter]
+# command = [
+#     "prybar-nodejs",
+#     "-q",
+#     "--ps1",
+#     "\u0001\u001b[33m\u0002\u0001\u001b[00m\u0002 ",
+#     "-i"
+# ]
 
 [[hints]]
 regex = "Error \\[ERR_REQUIRE_ESM\\]"
