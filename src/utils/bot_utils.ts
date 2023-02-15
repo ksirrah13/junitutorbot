@@ -10,18 +10,22 @@ export const requestAiResponses = async ({prompt, thread, newPromptId, askingUse
     const preferredAiSource = await getPreferredAiSource(prompt);
     
     if (isDebugUser) {
+        const wolframResult = await doWolfram({prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'wolfram', enableDebug: true});
+        const fallbackAnthropic = !wolframResult.success;
         // reply with all and mark one as preferred
-        const [aiResult, wolframResult, anthropicResult] = await Promise.allSettled([
+        const [aiResult, anthropicResult] = await Promise.allSettled([
             doCompletion({prompt, thread, parentPromptId: newPromptId, preferredResponse: false}),
-            doWolfram({prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'wolfram'}),
-            doAnthropic({prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'anthropic'})]);
+            doAnthropic({prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'anthropic' || fallbackAnthropic})]);
         console.log('all results', { aiResult, wolframResult, anthropicResult });
-
     } else {
         // only reply with the preferred one
         switch (preferredAiSource) {
             case 'wolfram': {
-                await doWolfram({prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'wolfram'});
+                const wolframResult = await doWolfram({prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'wolfram'});
+                // this can still fail so use anthropic as fallback if needed
+                if (!wolframResult.success) {
+                    await doAnthropic({prompt, thread, parentPromptId: newPromptId, preferredResponse: true});
+                }
                 break; 
             }
             case 'anthropic': {
