@@ -3,7 +3,7 @@ import { recordNewResponse } from "../db";
 import { createEmbedWrapper } from '../utils/discord_utils';
 
 
-export const doAnthropic = async (prompt, thread, parentPromptId) => {
+export const doAnthropic = async ({prompt, thread, parentPromptId, preferredResponse}) => {
   try {
     // how to enable this outside of the method call? process env not yet set
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -31,8 +31,8 @@ export const doAnthropic = async (prompt, thread, parentPromptId) => {
         }
       );
     const result = completion.completion;
-    const responseId = await recordNewResponse({ prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptId });
-    await sendResponse(result, thread, responseId);
+    const responseId = await recordNewResponse({ prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptId, preferredResponse });
+    await sendResponse(result, thread, responseId, preferredResponse);
     return result;
   } catch (error) {
     console.error(error);
@@ -40,8 +40,8 @@ export const doAnthropic = async (prompt, thread, parentPromptId) => {
   }
 }
 
-const sendResponse = async (result, thread, responseId) => {
-  await thread.send(createEmbedWrapper('Anthropic', result, responseId));
+const sendResponse = async (results, thread, responseId, preferredResponse) => {
+  await thread.send(createEmbedWrapper({title: 'Anthropic', results, responseId, preferredResponse}));
 }
 
 // const createPromptTemplate = (prompt) => `${HUMAN_PROMPT}Answer the following question by first describing the problem and the way it will be solved. Then use step by step examples with explanations for each step. Finally, provide the solution to the question. 

@@ -1,11 +1,13 @@
-import { ActionRowBuilder, MessageActionRowComponentBuilder } from '@discordjs/builders';
+import { ActionRowBuilder } from '@discordjs/builders';
 import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessagePayload, MessageCreateOptions } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
 
-export const createEmbedWrapper = (title, results, responseId) => {
+export const createEmbedWrapper = ({title, results, responseId, preferredResponse}) => {
+  const color = preferredResponse ? 0x0099FF : 0xFF6600;
+  const maskedTitle = preferredResponse ? 'Response' : title;
   const resultsEmbed = new EmbedBuilder()
-    .setColor(0x0099FF)
-    .setTitle(title)
+    .setColor(color)
+    .setTitle(maskedTitle)
     .addFields(
       createFields(results),
     );
@@ -23,11 +25,11 @@ export const createRatingEmbed = () => {
 const MAX_FIELD_LENGTH = 1024
 const createFields = text => {
   if (text.length <= MAX_FIELD_LENGTH) {
-    return { name: 'Results', value: text };
+    return { name: '\u200B', value: text };
   }
   // naive split which doesn't break on words or anything
   const chunkedFields = chunkString(text, MAX_FIELD_LENGTH);
-  return chunkedFields.map(value => ({ name: 'Results', value }));
+  return chunkedFields.map(value => ({ name: '\u200B', value }));
 }
 
 const chunkString = (str, length) => {
