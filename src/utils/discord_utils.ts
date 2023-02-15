@@ -1,6 +1,6 @@
-import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import { AnswerResult } from '../db.js';
+import { ActionRowBuilder, MessageActionRowComponentBuilder } from '@discordjs/builders';
+import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessagePayload, MessageCreateOptions } from 'discord.js';
+import { AnswerResult, AnswerResultChoice } from '../db';
 
 export const createEmbedWrapper = (title, results, responseId) => {
   const resultsEmbed = new EmbedBuilder()
@@ -43,7 +43,7 @@ export const createEmbedImages = (title, images) => {
   return embed;
 }
 
-export const createRatingsComponents = (responseId, voteCounts) => {
+export const createRatingsComponents = (responseId: String, voteCounts?: {yes?: number, no?: number}) => {
   const thumbsUp = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary)
     // .setEmoji({id: '1073723550084640942'}) //thumbs up
@@ -54,11 +54,11 @@ export const createRatingsComponents = (responseId, voteCounts) => {
     // .setEmoji({name: 'thumbsdown'})  //thumbs down
     .setCustomId(createCustomIdForTarget('thumbs-down', responseId))
     .setLabel(`No (${voteCounts?.no ?? 0})`)
-  const actionRow = new ActionRowBuilder().addComponents([thumbsUp, thumbsDown]);
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents([thumbsUp, thumbsDown]);
   return actionRow;
 }
 
-export const createMoreHelpBar = (promptId, answerResult) => {
+export const createMoreHelpBar = (promptId: string, answerResult?: AnswerResultChoice ): MessageCreateOptions => {
   const bestSolution = new StringSelectMenuBuilder()
   .setCustomId(createCustomIdForTarget('selected-best', promptId))
   .setPlaceholder('Which was the best solution?')
@@ -84,9 +84,9 @@ export const createMoreHelpBar = (promptId, answerResult) => {
     .setStyle(ButtonStyle.Danger)
     .setCustomId(createCustomIdForTarget('request-help', promptId))
     .setLabel(`${answerResult === AnswerResult.RequestHelp ? '** ' : ''}I need more help!`)
-  const responseRow = new ActionRowBuilder().addComponents([foundAnswer, needMoreHelp]);
-  const solutionRow = new ActionRowBuilder().addComponents([bestSolution]);
-  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [solutionRow, responseRow], ephemeral: true};
+  const responseRow = new ActionRowBuilder<ButtonBuilder>().addComponents([foundAnswer, needMoreHelp]);
+  const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
+  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [solutionRow, responseRow]};
 }
 
 const DISCORD_ACTION_SEPERATOR = ':';

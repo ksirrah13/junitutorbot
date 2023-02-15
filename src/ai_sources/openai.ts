@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from "openai";
-import { recordNewResponse } from "../db.js";
-import { createEmbedWrapper } from '../utils/discord_utils.js';
+import { recordNewResponse } from "../db";
+import { createEmbedWrapper } from '../utils/discord_utils';
 
 
 
@@ -20,7 +20,7 @@ export const doCompletion = async (prompt, thread, parentPromptId) => {
       max_tokens: 1000,
       stop: [HUMAN]
     });
-    const result = completion.data.choices[0].text;
+    const result = completion.data?.choices?.[0]?.text;
     const responseId = await recordNewResponse({ prompt: enhancedPrompt, response: result, source: 'openai', parentPromptId });
     await sendResponse(result, thread, responseId);
     return result;

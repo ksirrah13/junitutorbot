@@ -1,7 +1,6 @@
-import { recordNewResponse } from "../db.js";
-import WolframApi from '@tanzanite/wolfram-alpha';
-import { processWorlframPods } from '../utils/worlfram_utils.js';
-import { createEmbedWrapper, createEmbedImages } from '../utils/discord_utils.js';
+import { recordNewResponse } from "../db";
+import { processWorlframPods } from '../utils/worlfram_utils';
+import { createEmbedWrapper, createEmbedImages } from '../utils/discord_utils';
 
 
 // TODO add a precheck that verifies wolfram can answer the question
@@ -23,13 +22,19 @@ export const doWolfram = async (prompt, thread, parentPromptId) => {
     const worlframClassification = {domain: precheckResult.domain, confidence: precheckResult.resultsignificancescore};
     if (precheckResult.accepted === 'false') {
       console.log('wolfram failed precheck');
-      const invalidWolframQuery = "Worlfram can't handle this type of query";
+      const invalidWolframQuery = "Wolfram can't handle this type of query";
       const responseId = await recordNewResponse({ prompt, response: invalidWolframQuery, source: 'wolfram', parentPromptId });
       await sendTextResponse(invalidWolframQuery, thread, responseId, worlframClassification);
       return invalidWolframQuery;
     }
-    const waApi = WolframApi(process.env.WOLFRAM_APP_ID);
-    const queryResult = await waApi
+    if (!process.env.WOLFRAM_APP_ID) {
+      console.log('missing wolfram app key');
+      return;
+    }
+    const dynamicImport = new Function('specifier', 'return import(specifier)');
+    const { initializeClass } = await dynamicImport('@tanzanite/wolfram-alpha');
+    const waApi = initializeClass(process.env.WOLFRAM_APP_ID);
+    const queryResult: any = await waApi
       .getFull({ input: prompt, output: 'json', podstate: 'Step-by-step solution' }); // TODO find better podstate search agorithm
 
     if (!queryResult.success) {
@@ -41,7 +46,7 @@ export const doWolfram = async (prompt, thread, parentPromptId) => {
       await sendTextResponse(result, thread, responseId, worlframClassification);
       return result;
     }
-    const podResults = processWorlframPods(queryResult, thread, worlframClassification);
+    const podResults = processWorlframPods(queryResult);
     if (podResults) {
       const responseId = await recordNewResponse({ prompt, response: podResults, source: 'wolfram', parentPromptId });
       await sendTextResponse(podResults, thread, responseId, worlframClassification);
