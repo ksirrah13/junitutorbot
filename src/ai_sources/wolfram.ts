@@ -11,22 +11,11 @@ export const wolframPrecheck = async (prompt) => {
   const precheckUrl = `http://www.wolframalpha.com/queryrecognizer/query.jsp?appid=${APP_ID_KEY}&mode=Default&output=json&i=${encodeURIComponent(prompt)}`;
   const result = await fetch(precheckUrl);
   const body = await result.json();
-  console.dir(body);
   return body?.query?.[0] ?? {accepted: 'false'};
 }
 
-export const doWolfram = async (prompt, thread, parentPromptId) => {
+export const doWolfram = async ({prompt, thread, parentPromptId, preferredResponse}) => {
   try {
-    const precheckResult = await wolframPrecheck(prompt);
-    console.dir('wolfram precheck', {precheckResult});
-    const worlframClassification = {domain: precheckResult.domain, confidence: precheckResult.resultsignificancescore};
-    if (precheckResult.accepted === 'false') {
-      console.log('wolfram failed precheck');
-      const invalidWolframQuery = "Wolfram can't handle this type of query";
-      const responseId = await recordNewResponse({ prompt, response: invalidWolframQuery, source: 'wolfram', parentPromptId });
-      await sendTextResponse(invalidWolframQuery, thread, responseId, worlframClassification);
-      return invalidWolframQuery;
-    }
     if (!process.env.WOLFRAM_APP_ID) {
       console.log('missing wolfram app key');
       return;
@@ -42,19 +31,19 @@ export const doWolfram = async (prompt, thread, parentPromptId) => {
         ? `Did you mean ${queryResult.didyoumeans.val} ?`
         : 'Unsuccessful response from api'
       console.log('wolfram queryResult', queryResult);
-      const responseId = await recordNewResponse({ prompt, response: result, source: 'wolfram', parentPromptId });
-      await sendTextResponse(result, thread, responseId, worlframClassification);
+      const responseId = await recordNewResponse({ prompt, response: result, source: 'wolfram', parentPromptId, preferredResponse});
+      await sendTextResponse(result, thread, responseId, preferredResponse);
       return result;
     }
     const podResults = processWorlframPods(queryResult);
     if (podResults) {
-      const responseId = await recordNewResponse({ prompt, response: podResults, source: 'wolfram', parentPromptId });
-      await sendTextResponse(podResults, thread, responseId, worlframClassification);
+      const responseId = await recordNewResponse({ prompt, response: podResults, source: 'wolfram', parentPromptId, preferredResponse });
+      await sendTextResponse(podResults, thread, responseId, preferredResponse);
       return podResults;
     } 
     console.error('No pods in response', queryResult);
-    const responseId = await recordNewResponse({ prompt, response: 'No results in response', source: 'wolfram', parentPromptId });
-    await sendTextResponse('no results in response', thread, responseId, worlframClassification);
+    const responseId = await recordNewResponse({ prompt, response: 'No results in response', source: 'wolfram', parentPromptId, preferredResponse });
+    await sendTextResponse('no results in response', thread, responseId, preferredResponse);
     return 'No results in response';
   } catch (error) {
     console.error(error);
@@ -62,9 +51,8 @@ export const doWolfram = async (prompt, thread, parentPromptId) => {
   }
 }
 
-const sendTextResponse = async (result, thread, responseId, classification) => {
-  const annotatedResult = classification ? `Problem classification: ${classification.domain} (confidence: ${classification.confidence})\n\n${result}` : result;
-  await thread.send(createEmbedWrapper('Wolfram', annotatedResult, responseId));
+const sendTextResponse = async (results, thread, responseId, preferredResponse) => {
+  await thread.send(createEmbedWrapper({title: 'Wolfram', results, responseId, preferredResponse}));
 }
 
 const sendImageResponse = async (images, thread) => {

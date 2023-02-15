@@ -18,8 +18,8 @@ export const connectDb = async () => {
   }
 }
 
-export const recordNewResponse = async ({ prompt, response, source, parentPromptId }) => {
-  const { _id } = await ResponseResult.create({ prompt, response, source });
+export const recordNewResponse = async ({ prompt, response, source, parentPromptId, preferredResponse }) => {
+  const { _id } = await ResponseResult.create({ prompt, response, source, preferredResponse });
   await Prompt.findByIdAndUpdate(parentPromptId, { $push: { responses:  _id }});
   return _id.toString();
 }

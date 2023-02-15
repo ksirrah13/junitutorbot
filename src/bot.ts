@@ -1,9 +1,7 @@
 import { Client, GatewayIntentBits, Events } from 'discord.js';
-import { doCompletion } from './ai_sources/openai';
-import { doWolfram } from './ai_sources/wolfram';
-import { doAnthropic } from './ai_sources/anthropic';
 import { incrementRatingCount, startNewPrompt, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId, trimToLength } from './utils/discord_utils';
+import { requestAiResponses } from './utils/bot_utils';
 
 const client = new Client({
   intents: [
@@ -35,11 +33,7 @@ client.on(Events.MessageCreate, async msg => {
     })
     try {
       const newPromptId = await startNewPrompt({user: msg.author.id, input: prompt});
-      const [aiResult, wolframResult, anthropicResult] = await Promise.allSettled([
-          doCompletion(prompt, thread, newPromptId),
-          doWolfram(prompt, thread, newPromptId),
-          doAnthropic(prompt, thread, newPromptId)]);
-      console.log('all results', { aiResult, wolframResult, anthropicResult });
+      await requestAiResponses({prompt, thread, newPromptId, askingUserId: msg.author.id})
       await thread.send(createMoreHelpBar(newPromptId));
     } catch (error) {
       console.error(error);
