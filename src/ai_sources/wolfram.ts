@@ -14,11 +14,11 @@ export const wolframPrecheck = async (prompt) => {
   return body?.query?.[0] ?? {accepted: 'false'};
 }
 
-export const doWolfram = async ({prompt, thread, parentPromptId, preferredResponse}) => {
+export const doWolfram = async ({prompt, thread, parentPromptId, preferredResponse, enableDebug = false}) => {
   try {
     if (!process.env.WOLFRAM_APP_ID) {
       console.log('missing wolfram app key');
-      return;
+      return {success: false};
     }
     const dynamicImport = new Function('specifier', 'return import(specifier)');
     const { initializeClass } = await dynamicImport('@tanzanite/wolfram-alpha');
@@ -31,20 +31,24 @@ export const doWolfram = async ({prompt, thread, parentPromptId, preferredRespon
         ? `Did you mean ${queryResult.didyoumeans.val} ?`
         : 'Unsuccessful response from api'
       console.log('wolfram queryResult', queryResult);
-      const responseId = await recordNewResponse({ prompt, response: result, source: 'wolfram', parentPromptId, preferredResponse});
-      await sendTextResponse(result, thread, responseId, preferredResponse);
-      return result;
+      const responseId = await recordNewResponse({ prompt, response: result, source: 'wolfram', parentPromptId, preferredResponse: false});
+      if (enableDebug) {
+        await sendTextResponse(result, thread, responseId, false);
+      }
+      return {success: false, result};
     }
     const podResults = processWorlframPods(queryResult);
     if (podResults) {
       const responseId = await recordNewResponse({ prompt, response: podResults, source: 'wolfram', parentPromptId, preferredResponse });
       await sendTextResponse(podResults, thread, responseId, preferredResponse);
-      return podResults;
+      return {success: true, result: podResults};
     } 
     console.error('No pods in response', queryResult);
-    const responseId = await recordNewResponse({ prompt, response: 'No results in response', source: 'wolfram', parentPromptId, preferredResponse });
-    await sendTextResponse('no results in response', thread, responseId, preferredResponse);
-    return 'No results in response';
+    const responseId = await recordNewResponse({ prompt, response: 'No results in response', source: 'wolfram', parentPromptId, preferredResponse: false });
+    if (enableDebug) {
+      await sendTextResponse('no results in response', thread, responseId, false);
+    }
+    return {success: false, result: 'No results in response'};
   } catch (error) {
     console.error(error);
     throw error;
