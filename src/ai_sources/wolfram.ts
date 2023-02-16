@@ -14,7 +14,7 @@ export const wolframPrecheck = async (prompt) => {
   return body?.query?.[0] ?? {accepted: 'false'};
 }
 
-export const doWolfram = async ({prompt, thread, parentPromptId, preferredResponse, enableDebug = false}) => {
+export const doWolfram = async ({prompt, thread, interaction, parentPromptId, preferredResponse, enableDebug = false}) => {
   try {
     if (!process.env.WOLFRAM_APP_ID) {
       console.log('missing wolfram app key');
@@ -33,20 +33,20 @@ export const doWolfram = async ({prompt, thread, parentPromptId, preferredRespon
       console.log('wolfram queryResult', queryResult);
       const responseId = await recordNewResponse({ prompt, response: result, source: 'wolfram', parentPromptId, preferredResponse: false});
       if (enableDebug) {
-        await sendTextResponse(result, thread, responseId, false);
+        await sendTextResponse(result, thread, responseId, false, interaction);
       }
       return {success: false, result};
     }
     const podResults = processWorlframPods(queryResult);
     if (podResults) {
       const responseId = await recordNewResponse({ prompt, response: podResults, source: 'wolfram', parentPromptId, preferredResponse });
-      await sendTextResponse(podResults, thread, responseId, preferredResponse);
+      await sendTextResponse(podResults, thread, responseId, preferredResponse, interaction);
       return {success: true, result: podResults};
     } 
     console.error('No pods in response', queryResult);
     const responseId = await recordNewResponse({ prompt, response: 'No results in response', source: 'wolfram', parentPromptId, preferredResponse: false });
     if (enableDebug) {
-      await sendTextResponse('no results in response', thread, responseId, false);
+      await sendTextResponse('no results in response', thread, responseId, false, interaction);
     }
     return {success: false, result: 'No results in response'};
   } catch (error) {
@@ -55,8 +55,14 @@ export const doWolfram = async ({prompt, thread, parentPromptId, preferredRespon
   }
 }
 
-const sendTextResponse = async (results, thread, responseId, preferredResponse) => {
-  await thread.send(createEmbedWrapper({title: 'Wolfram', results, responseId, preferredResponse}));
+const sendTextResponse = async (results, thread, responseId, preferredResponse, interaction) => {
+  // if we have a slash command we can send using ephemeral messages
+  const embed = createEmbedWrapper({title: 'Wolfram', results, responseId, preferredResponse});
+  if (interaction && !preferredResponse) {
+    interaction.followUp({...embed, ephemeral: true});
+    return;
+  }
+  await thread.send(embed);
 }
 
 const sendImageResponse = async (images, thread) => {
