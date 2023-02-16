@@ -1,5 +1,5 @@
 import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessagePayload, MessageCreateOptions, InteractionReplyOptions } from 'discord.js';
+import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
 
 export const createEmbedWrapper = ({title, results, responseId, preferredResponse}) => {
@@ -11,7 +11,9 @@ export const createEmbedWrapper = ({title, results, responseId, preferredRespons
     .addFields(
       createFields(results),
     );
-  return {embeds: [resultsEmbed, createRatingEmbed()], components: [createRatingsComponents(responseId)]};
+  return preferredResponse 
+    ? {embeds: [resultsEmbed, createRatingEmbed()], components: [createRatingsComponents(responseId)]} 
+    : {embeds: [resultsEmbed]};
 }
 
 export const createRatingEmbed = () => {
@@ -23,7 +25,7 @@ export const createRatingEmbed = () => {
 }
 
 const MAX_FIELD_LENGTH = 1024
-const createFields = text => {
+export const createFields = text => {
   if (text.length <= MAX_FIELD_LENGTH) {
     return { name: '\u200B', value: text };
   }
@@ -87,8 +89,8 @@ export const createMoreHelpBar = (promptId: string, answerResult?: AnswerResultC
     .setCustomId(createCustomIdForTarget('request-help', promptId))
     .setLabel(`${answerResult === AnswerResult.RequestHelp ? '** ' : ''}I need more help!`)
   const responseRow = new ActionRowBuilder<ButtonBuilder>().addComponents([foundAnswer, needMoreHelp]);
-  const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
-  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [solutionRow, responseRow]};
+  // const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
+  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [responseRow]};
 }
 
 export const createMoreHelpBarEphemeral = (promptId: string, answerResult?: AnswerResultChoice ): InteractionReplyOptions => {
@@ -118,8 +120,8 @@ export const createMoreHelpBarEphemeral = (promptId: string, answerResult?: Answ
     .setCustomId(createCustomIdForTarget('request-help', promptId))
     .setLabel(`${answerResult === AnswerResult.RequestHelp ? '** ' : ''}I need more help!`)
   const responseRow = new ActionRowBuilder<ButtonBuilder>().addComponents([foundAnswer, needMoreHelp]);
-  const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
-  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [solutionRow, responseRow], ephemeral: true};
+  // const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
+  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [responseRow], ephemeral: true};
 }
 
 const DISCORD_ACTION_SEPERATOR = ':';

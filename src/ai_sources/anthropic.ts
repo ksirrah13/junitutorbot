@@ -3,7 +3,7 @@ import { recordNewResponse } from "../db";
 import { createEmbedWrapper } from '../utils/discord_utils';
 
 
-export const doAnthropic = async ({prompt, thread, parentPromptId, preferredResponse}) => {
+export const doAnthropic = async ({prompt, thread, interaction, parentPromptId, preferredResponse}) => {
   try {
     // how to enable this outside of the method call? process env not yet set
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -32,7 +32,7 @@ export const doAnthropic = async ({prompt, thread, parentPromptId, preferredResp
       );
     const result = completion.completion;
     const responseId = await recordNewResponse({ prompt: enhancedPrompt, response: result, source: 'anthropic', parentPromptId, preferredResponse });
-    await sendResponse(result, thread, responseId, preferredResponse);
+    await sendResponse(result, thread, responseId, preferredResponse, interaction);
     return result;
   } catch (error) {
     console.error(error);
@@ -40,7 +40,13 @@ export const doAnthropic = async ({prompt, thread, parentPromptId, preferredResp
   }
 }
 
-const sendResponse = async (results, thread, responseId, preferredResponse) => {
+const sendResponse = async (results, thread, responseId, preferredResponse, interaction) => {
+  const embed = createEmbedWrapper({title: 'Anthropic', results, responseId, preferredResponse});
+  // if we have a slash command we can send using ephemeral messages
+  if (interaction && !preferredResponse) {
+    interaction.followUp({...embed, ephemeral: true});
+    return;
+  }
   await thread.send(createEmbedWrapper({title: 'Anthropic', results, responseId, preferredResponse}));
 }
 

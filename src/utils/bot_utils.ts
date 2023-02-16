@@ -15,8 +15,8 @@ export const requestAiResponses = async ({ prompt, thread, interaction, newPromp
     const fallbackAnthropic = !wolframResult.success;
     // reply with all and mark one as preferred
     const [aiResult, anthropicResult] = await Promise.allSettled([
-      doCompletion({ prompt, thread, parentPromptId: newPromptId, preferredResponse: false }),
-      doAnthropic({ prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'anthropic' || fallbackAnthropic })]);
+      doCompletion({ prompt, thread, interaction, parentPromptId: newPromptId, preferredResponse: false }),
+      doAnthropic({ prompt, thread, interaction, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'anthropic' || fallbackAnthropic })]);
     console.log('all results', { aiResult, wolframResult, anthropicResult });
   } else {
     // only reply with the preferred one
@@ -25,12 +25,12 @@ export const requestAiResponses = async ({ prompt, thread, interaction, newPromp
         const wolframResult = await doWolfram({ prompt, thread, interaction, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'wolfram' });
         // this can still fail so use anthropic as fallback if needed
         if (!wolframResult.success) {
-          await doAnthropic({ prompt, thread, parentPromptId: newPromptId, preferredResponse: true });
+          await doAnthropic({ prompt, thread, interaction, parentPromptId: newPromptId, preferredResponse: true });
         }
         break;
       }
       case 'anthropic': {
-        await doAnthropic({ prompt, thread, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'anthropic' });
+        await doAnthropic({ prompt, thread, interaction, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'anthropic' });
         break;
       }
       default: {
