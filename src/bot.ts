@@ -28,9 +28,13 @@ client.on(Events.MessageCreate, async msg => {
   if (msg.author.id != client.user?.id) {
     const inputPrompt = msg.content;
     if (!inputPrompt) {
-      console.log('no prompt input');
       return;
     }
+    if (inputPrompt.includes(`<@${BOT_MENTION_ID}>`)) {
+      msg.reply({content: 'Hi! Want to talk to me? Use my fancy new slash command /tutorbot'})
+      return;
+    }
+    // this is all pretty much disabled now by the above condition
     const prompt = inputPrompt.replace(`<@${BOT_MENTION_ID}>`, '').trim();
     const thread = await msg.startThread({
       name: trimToLength(prompt),
