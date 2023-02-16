@@ -143,6 +143,6 @@ const registerSlashCommands = async () => {
   const rest = new REST({version: '10'}).setToken(BOT_TOKEN);
 
   const commandsToAdd = SLASH_COMMANDS.map(({data}) => data.toJSON());
-  const dataResult: any = await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, '1073674581124075620'), {body: commandsToAdd});
+  const dataResult: any = await rest.put(Routes.applicationCommands(APPLICATION_ID), {body: commandsToAdd});
   console.log(`successfully added ${dataResult.length} slash commands`)
 }
