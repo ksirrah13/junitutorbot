@@ -1,7 +1,6 @@
-import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, Interaction, CacheType, REST, Routes, ChatInputCommandInteraction } from 'discord.js';
-import { incrementRatingCount, startNewPrompt, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
-import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId, trimToLength } from './utils/discord_utils';
-import { requestAiResponses } from './utils/bot_utils';
+import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction } from 'discord.js';
+import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
+import { createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId } from './utils/discord_utils';
 import { tutorBotCommand } from './commands';
 
 const client = new Client({
@@ -33,21 +32,6 @@ client.on(Events.MessageCreate, async msg => {
     if (inputPrompt.includes(`<@${BOT_MENTION_ID}>`)) {
       msg.reply({content: 'Hi! Want to talk to me? Use my fancy new slash command /tutorbot'})
       return;
-    }
-    // this is all pretty much disabled now by the above condition
-    const prompt = inputPrompt.replace(`<@${BOT_MENTION_ID}>`, '').trim();
-    const thread = await msg.startThread({
-      name: trimToLength(prompt),
-      autoArchiveDuration: 60,
-      reason: 'Collecting responses from AIs',
-    })
-    try {
-      const newPromptId = await startNewPrompt({user: msg.author.id, input: prompt});
-      await requestAiResponses({prompt, thread, newPromptId, askingUserId: msg.author.id})
-      await thread.send(createMoreHelpBar(newPromptId));
-    } catch (error) {
-      console.error(error);
-      thread.send('error processing request');
     }
   }
 });
@@ -89,12 +73,12 @@ client.on(Events.InteractionCreate, async interaction => {
       }
       case 'answered':  {
         await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.Answered});
-        interaction.update(createMoreHelpBar(target, AnswerResult.Answered))
+        interaction.update(createMoreHelpBar({promptId: target, answerResult: AnswerResult.Answered}))
         break;
       }
       case 'request-help':  {
         await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.RequestHelp});
-        interaction.update(createMoreHelpBar(target, AnswerResult.RequestHelp))
+        interaction.update(createMoreHelpBar({promptId: target, answerResult: AnswerResult.RequestHelp}))
         break;
       }
       default: {

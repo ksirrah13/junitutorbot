@@ -1,5 +1,5 @@
 import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions } from 'discord.js';
+import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
 
 export const createEmbedWrapper = ({title, results, responseId, preferredResponse}) => {
@@ -12,7 +12,7 @@ export const createEmbedWrapper = ({title, results, responseId, preferredRespons
       createFields(results),
     );
   return preferredResponse 
-    ? {embeds: [resultsEmbed, createRatingEmbed()], components: [createRatingsComponents(responseId)]} 
+    ? {embeds: [resultsEmbed], components: [createRatingsComponents(responseId)]} 
     : {embeds: [resultsEmbed]};
 }
 
@@ -50,78 +50,42 @@ export const createEmbedImages = (title, images) => {
 export const createRatingsComponents = (responseId: String, voteCounts?: {yes?: number, no?: number}) => {
   const thumbsUp = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary)
-    // .setEmoji({id: '1073723550084640942'}) //thumbs up
+    .setEmoji('👍') //thumbs up
     .setCustomId(createCustomIdForTarget('thumbs-up', responseId))
-    .setLabel(`Yes! (${voteCounts?.yes ?? 0})`) 
+    .setLabel(` ${voteCounts?.yes ?? 0}`) 
   const thumbsDown = new ButtonBuilder()
     .setStyle(ButtonStyle.Primary)
-    // .setEmoji({name: 'thumbsdown'})  //thumbs down
+    .setEmoji('👎')  //thumbs down
     .setCustomId(createCustomIdForTarget('thumbs-down', responseId))
-    .setLabel(`No (${voteCounts?.no ?? 0})`)
+    .setLabel(` ${voteCounts?.no ?? 0}`)
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents([thumbsUp, thumbsDown]);
   return actionRow;
 }
 
-export const createMoreHelpBar = (promptId: string, answerResult?: AnswerResultChoice ): MessageCreateOptions => {
-  const bestSolution = new StringSelectMenuBuilder()
-  .setCustomId(createCustomIdForTarget('selected-best', promptId))
-  .setPlaceholder('Which was the best solution?')
-  .addOptions(
-    {
-      label: 'Wolfram',
-      value: 'worlfram',
-    },
-    {
-      label: 'OpenAI',
-      value: 'openai',
-    },
-    {
-      label: 'Anthropic',
-      value: 'anthropic',
-    },
-  );
-  const foundAnswer = new ButtonBuilder()
-  .setStyle(ButtonStyle.Success)
-  .setCustomId(createCustomIdForTarget('answered', promptId))
-  .setLabel(`${answerResult === AnswerResult.Answered ? '** ' : ''}I found my answer!`)
-  const needMoreHelp = new ButtonBuilder()
-    .setStyle(ButtonStyle.Danger)
-    .setCustomId(createCustomIdForTarget('request-help', promptId))
-    .setLabel(`${answerResult === AnswerResult.RequestHelp ? '** ' : ''}I need more help!`)
-  const responseRow = new ActionRowBuilder<ButtonBuilder>().addComponents([foundAnswer, needMoreHelp]);
-  // const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
-  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [responseRow]};
-}
+type CreateHelperOverloads = {
+  (inputs: {promptId: string, answerResult?: AnswerResultChoice, ephemeral: true}): InteractionReplyOptions;
+  (inputs: {promptId: string, answerResult?: AnswerResultChoice, ephemeral?: boolean}): MessageCreateOptions
+}  
 
-export const createMoreHelpBarEphemeral = (promptId: string, answerResult?: AnswerResultChoice ): InteractionReplyOptions => {
-  const bestSolution = new StringSelectMenuBuilder()
-  .setCustomId(createCustomIdForTarget('selected-best', promptId))
-  .setPlaceholder('Which was the best solution?')
-  .addOptions(
-    {
-      label: 'Wolfram',
-      value: 'worlfram',
-    },
-    {
-      label: 'OpenAI',
-      value: 'openai',
-    },
-    {
-      label: 'Anthropic',
-      value: 'anthropic',
-    },
-  );
+export const createMoreHelpBar: CreateHelperOverloads = (
+  {promptId, answerResult, ephemeral}: 
+  {promptId: string, answerResult?:AnswerResultChoice, ephemeral?:boolean}) => {
   const foundAnswer = new ButtonBuilder()
-  .setStyle(ButtonStyle.Success)
-  .setCustomId(createCustomIdForTarget('answered', promptId))
-  .setLabel(`${answerResult === AnswerResult.Answered ? '** ' : ''}I found my answer!`)
+    .setStyle(ButtonStyle.Success)
+    .setCustomId(createCustomIdForTarget('answered', promptId))
+    .setLabel('Yes!')
+    .setDisabled(answerResult === AnswerResult.Answered);
   const needMoreHelp = new ButtonBuilder()
-    .setStyle(ButtonStyle.Danger)
+    .setStyle(ButtonStyle.Primary)
     .setCustomId(createCustomIdForTarget('request-help', promptId))
-    .setLabel(`${answerResult === AnswerResult.RequestHelp ? '** ' : ''}I need more help!`)
+    .setLabel('I need more help')
+    .setDisabled(answerResult === AnswerResult.RequestHelp);
   const responseRow = new ActionRowBuilder<ButtonBuilder>().addComponents([foundAnswer, needMoreHelp]);
-  // const solutionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([bestSolution]);
-  return {content: answerResult ? "Thanks for the feedback!" : "Did you find the answer you wanted?", components: [responseRow], ephemeral: true};
+  return answerResult === AnswerResult.Answered
+    ? {content: "Thanks for the feedback!", components: [responseRow], ...(ephemeral && {ephemeral: true})}
+    : answerResult === AnswerResult.RequestHelp
+    ? {content: "Help is on the way!", components: [], ...(ephemeral && {ephemeral: true})}
+    : {content: "Was I helpful?", components: [responseRow], ...(ephemeral && {ephemeral: true})};
 }
 
 const DISCORD_ACTION_SEPERATOR = ':';
