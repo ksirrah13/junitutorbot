@@ -119,6 +119,10 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
+client.on(Events.Error, (error) => {
+  console.error(error);
+})
+
 export const startDiscord = async () => {
   if (!BOT_TOKEN) {
     console.log('missing bot token!');
