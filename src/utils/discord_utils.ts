@@ -1,5 +1,5 @@
 import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload } from 'discord.js';
+import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
 
 export const createEmbedWrapper = ({title, results, responseId, preferredResponse}) => {
@@ -65,7 +65,13 @@ export const createRatingsComponents = (responseId: String, voteCounts?: {yes?: 
 type CreateHelperOverloads = {
   (inputs: {promptId: string, answerResult?: AnswerResultChoice, ephemeral: true}): InteractionReplyOptions;
   (inputs: {promptId: string, answerResult?: AnswerResultChoice, ephemeral?: boolean}): MessageCreateOptions
-}  
+}
+
+export const createHelpRequestedResponse = (
+  {helpThreadUrl}: 
+  {helpThreadUrl?: string}): MessageCreateOptions => {
+    return {content: `Help is on the way!${helpThreadUrl ? ` [view thread >>](${helpThreadUrl})` : ''}`, components: []};
+}
 
 export const createMoreHelpBar: CreateHelperOverloads = (
   {promptId, answerResult, ephemeral}: 
@@ -86,6 +92,19 @@ export const createMoreHelpBar: CreateHelperOverloads = (
     : answerResult === AnswerResult.RequestHelp
     ? {content: "Help is on the way!", components: [], ...(ephemeral && {ephemeral: true})}
     : {content: "Was I helpful?", components: [responseRow], ...(ephemeral && {ephemeral: true})};
+}
+
+export const requestHelpFromChannel = async (interaction: ButtonInteraction<CacheType>) => {
+  // hardcoded request to channel with new message
+  const SOS_CHANNEL_ID = '1076296552840183880';
+  const sosChannel = await interaction.client.channels.cache.get(SOS_CHANNEL_ID);
+  if (!sosChannel) {
+    console.log('no tutor sos channel configured!');
+    return;
+  }
+  const message = await (sosChannel as TextChannel).send({content: `Hello from another channel! [go back <<](${interaction.message.url})`});
+  const thread = await message.startThread({name: 'Tutor help please' });
+  return thread;
 }
 
 const DISCORD_ACTION_SEPERATOR = ':';
