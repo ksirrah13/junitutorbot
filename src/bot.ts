@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
-import { tutorBotCommand } from './commands';
+import { mathOcrCommand, tutorBotCommand } from './commands';
 
 const client = new Client({
   intents: [
@@ -13,10 +13,12 @@ const client = new Client({
 const BOT_TOKEN = process.env['DISCORD_BOT_SECRET'];
 const BOT_MENTION_ID = process.env['BOT_MENTION_ID'];
 const APPLICATION_ID = process.env['DISCORD_APPLICATION_ID'];
+const DISCORD_DEV_GUILD_ID = process.env['DISCORD_DEV_GUILD_ID'];
 
 // Register slash commands
 export const SLASH_COMMANDS = new Collection<string, {data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>, execute: (i: ChatInputCommandInteraction<CacheType>) => void}>();
 SLASH_COMMANDS.set(tutorBotCommand.data.name, tutorBotCommand);
+SLASH_COMMANDS.set(mathOcrCommand.data.name, mathOcrCommand);
 
 client.on(Events.ClientReady, () => {
   console.log("I'm in");
@@ -136,6 +138,8 @@ const registerSlashCommands = async () => {
   const rest = new REST({version: '10'}).setToken(BOT_TOKEN);
 
   const commandsToAdd = SLASH_COMMANDS.map(({data}) => data.toJSON());
-  const dataResult: any = await rest.put(Routes.applicationCommands(APPLICATION_ID), {body: commandsToAdd});
-  console.log(`successfully added ${dataResult.length} slash commands`)
+  const dataResult: any = DISCORD_DEV_GUILD_ID // only target a specific server
+    ? await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, DISCORD_DEV_GUILD_ID), {body: commandsToAdd})
+    : await rest.put(Routes.applicationCommands(APPLICATION_ID), {body: commandsToAdd});
+  console.log(`successfully added ${dataResult.length} slash commands${DISCORD_DEV_GUILD_ID ? `to server ${DISCORD_DEV_GUILD_ID}` : ''}`)
 }

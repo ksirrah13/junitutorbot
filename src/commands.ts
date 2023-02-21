@@ -3,6 +3,7 @@ import { CacheType, SlashCommandBuilder, ChatInputCommandInteraction } from 'dis
 import { startNewPrompt } from './db';
 import { requestAiResponses } from './utils/bot_utils';
 import { createFields, createMoreHelpBar, trimToLength } from './utils/discord_utils';
+import { getMathOcrResults } from './utils/math_ocr';
 
 export const tutorBotCommand = {
     data: new SlashCommandBuilder()
@@ -46,4 +47,60 @@ export const tutorBotCommand = {
             }
           }
     }
+}
+
+export const mathOcrCommand = {
+  data: new SlashCommandBuilder()
+      .setName('tutorbotimage')
+      .setDescription('Requests homework help from Juni Tutor Bot using an image as input')
+      .addAttachmentOption(option =>
+          option.setName('image')
+              .setDescription('The image to send to the tutor bot')
+              .setRequired(true)),
+  execute: async (interaction: ChatInputCommandInteraction<CacheType>) => {
+      if (interaction.user.id != interaction.client.user?.id) {
+          const image = interaction.options.getAttachment('image');
+          if (!image) {
+            await interaction.reply({content: 'Please provide an image to the tutor bot', ephemeral: true});
+            return;
+          }
+          // match my specific file name
+          const {name} = image;
+          if (!name) {
+            console.log('no name for image attachment!');
+            return;
+          }
+          try {
+            const ocrResult = await getMathOcrResults(name);
+            if (!ocrResult) {
+              await interaction.reply({content: 'Error parsing image, please try a different image', ephemeral: true});
+              return;
+            }
+            const { data } : {data: Record<string, any>[]} = ocrResult;
+            const imageFieldResults = (data ?? []).map(result => ({name: result.type, value: result.value}))
+            const questionEmbed = new EmbedBuilder()
+              .setColor(0x00FF00)
+              .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the parsed results! 🤖💬`)
+              .addFields(imageFieldResults);
+          const message = await interaction.reply({embeds: [questionEmbed], fetchReply: true});
+          const thread = await message.startThread({
+            name: trimToLength('processing image results'),
+            autoArchiveDuration: 60,
+            reason: 'Collecting response from AI',
+          })
+          for (const result of data) {
+            const annotatedPrompt = `The math problem is given in ${result.type} format. Solve the following problem. ${result.value}`;
+            console.log({annotatedPrompt});
+            const newPromptId = await startNewPrompt({user: interaction.user.id, input: annotatedPrompt, messageId: message.id, messageUrl: message.url});
+            await requestAiResponses({prompt: annotatedPrompt, thread, interaction, newPromptId, askingUserId: interaction.user.id})
+            await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
+          }
+        } catch (error) {
+          console.error(error);
+          await interaction.reply({content: 'Error parsing image, please try a different image', ephemeral: true});
+       
+        }
+         
+        }
+  }
 }
