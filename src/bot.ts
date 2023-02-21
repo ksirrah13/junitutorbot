@@ -141,5 +141,14 @@ const registerSlashCommands = async () => {
   const dataResult: any = DISCORD_DEV_GUILD_ID // only target a specific server
     ? await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, DISCORD_DEV_GUILD_ID), {body: commandsToAdd})
     : await rest.put(Routes.applicationCommands(APPLICATION_ID), {body: commandsToAdd});
+  if (DISCORD_DEV_GUILD_ID && process.env.DEV_MODE === 'true') {
+    // clean up global commands since the guild specific will be duplicates
+    const globalCommands  = await rest.get(Routes.applicationCommands(APPLICATION_ID)) as Record<string, any>[];
+    for (const command of globalCommands) {
+      console.log('deleting global command', {name: command.name});
+      await rest.delete(`${Routes.applicationCommands(APPLICATION_ID)}/${command.id}`);
+    }
+
+  }
   console.log(`successfully added ${dataResult.length} slash commands${DISCORD_DEV_GUILD_ID ? `to server ${DISCORD_DEV_GUILD_ID}` : ''}`)
 }
