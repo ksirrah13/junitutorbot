@@ -24,8 +24,8 @@ export const recordNewResponse = async ({ prompt, response, source, parentPrompt
   return _id.toString();
 }
 
-export const startNewPrompt = async ({ user, input }) => {
-  const { _id } = await Prompt.create({ user, input });
+export const startNewPrompt = async ({ user, input, messageId, messageUrl }) => {
+  const { _id } = await Prompt.create({ user, input, messageId, messageUrl });
   return _id.toString();
 }
 

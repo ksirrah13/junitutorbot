@@ -37,7 +37,7 @@ export const tutorBotCommand = {
               reason: 'Collecting response from AI',
             })
             try {
-              const newPromptId = await startNewPrompt({user: interaction.user.id, input: prompt});
+              const newPromptId = await startNewPrompt({user: interaction.user.id, input: prompt, messageId: message.id, messageUrl: message.url});
               await requestAiResponses({prompt, thread, interaction, newPromptId, askingUserId: interaction.user.id})
               await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
             } catch (error) {
