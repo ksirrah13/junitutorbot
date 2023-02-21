@@ -8,7 +8,7 @@ const DEBUG_USER_ALLOWLIST = (process.env.DEBUG_USER_LIST ?? '').split(',');
 export const requestAiResponses = async ({ prompt, thread, interaction, newPromptId, askingUserId }: { prompt: string, thread: any, interaction?: Interaction<CacheType>, newPromptId: string, askingUserId?: string }) => {
 
   const isDebugUser = askingUserId && DEBUG_USER_ALLOWLIST.includes(askingUserId);
-  const preferredAiSource = await getPreferredAiSource(prompt);
+  const preferredAiSource = await getPreferredAiSource(prompt, interaction, isDebugUser);
 
   if (isDebugUser) {
     const wolframResult = await doWolfram({ prompt, thread, interaction, parentPromptId: newPromptId, preferredResponse: preferredAiSource === 'wolfram', enableDebug: true });
@@ -44,8 +44,11 @@ export const requestAiResponses = async ({ prompt, thread, interaction, newPromp
 
 const validWolframDomains = ['math', 'sums', 'equation solving'];
 
-const getPreferredAiSource = async (prompt) => {
+const getPreferredAiSource = async (prompt, interaction, isDebugUser) => {
   const { accepted, domain, resultsignificancescore } = await wolframPrecheck(prompt);
+  if (isDebugUser) {
+    await interaction.followUp({ content: `Wolfram Classification Results:\nAccepted: ${accepted}\nDomain: ${domain} (confidence ${resultsignificancescore})`, ephemeral: true})
+  }
 
   if (accepted === 'true' && validWolframDomains.includes(domain) && Number(resultsignificancescore) > 80) {
     return 'wolfram'
