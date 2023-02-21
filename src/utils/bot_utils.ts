@@ -42,7 +42,7 @@ export const requestAiResponses = async ({ prompt, thread, interaction, newPromp
 
 }
 
-const validWolframDomains = ['math', 'sums'];
+const validWolframDomains = ['math', 'sums', 'equation solving'];
 
 const getPreferredAiSource = async (prompt) => {
   const { accepted, domain, resultsignificancescore } = await wolframPrecheck(prompt);
