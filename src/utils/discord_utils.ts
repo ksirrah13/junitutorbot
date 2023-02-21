@@ -1,6 +1,7 @@
 import { ActionRowBuilder } from '@discordjs/builders';
 import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
+import { Prompt } from '../models/prompt';
 
 export const createEmbedWrapper = ({title, results, responseId, preferredResponse}) => {
   const color = preferredResponse ? 0x0099FF : 0xFF6600;
@@ -94,16 +95,30 @@ export const createMoreHelpBar: CreateHelperOverloads = (
     : {content: "Was I helpful?", components: [responseRow], ...(ephemeral && {ephemeral: true})};
 }
 
-export const requestHelpFromChannel = async (interaction: ButtonInteraction<CacheType>) => {
+export const requestHelpFromChannel = async (interaction: ButtonInteraction<CacheType>, promptId: string) => {
   // hardcoded request to channel with new message
-  const SOS_CHANNEL_ID = '1076296552840183880';
+  const SOS_CHANNEL_ID = process.env.TUTOR_SOS_CHANNEL_ID;
+  if (!SOS_CHANNEL_ID) {
+    console.log('no tutor sos channel id env var configured');
+    return;
+  }
   const sosChannel = await interaction.client.channels.cache.get(SOS_CHANNEL_ID);
   if (!sosChannel) {
     console.log('no tutor sos channel configured!');
     return;
   }
-  const message = await (sosChannel as TextChannel).send({content: `Hello from another channel! [go back <<](${interaction.message.url})`});
-  const thread = await message.startThread({name: 'Tutor help please' });
+  const originalPrompt = await Prompt.findById(promptId).lean().exec();
+  if (!originalPrompt) {
+    console.log('No prompt found for prompt id', {promptId});
+    return;
+  }
+  const { messageUrl, input: originalInput } = originalPrompt;
+  const questionEmbed = new EmbedBuilder()
+  .setColor(0x00FF00)
+  .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬\n[original message](${messageUrl})`)
+  .addFields(createFields(originalInput));
+  const message = await (sosChannel as TextChannel).send({embeds: [questionEmbed]});
+  const thread = await message.startThread({name: `${trimToLength(originalInput)}` });
   return thread;
 }
 

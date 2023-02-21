@@ -78,7 +78,7 @@ client.on(Events.InteractionCreate, async interaction => {
       }
       case 'request-help':  {
         await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.RequestHelp});
-        const helpThread = await requestHelpFromChannel(interaction);
+        const helpThread = await requestHelpFromChannel(interaction, target);
         interaction.update(createHelpRequestedResponse({helpThreadUrl: helpThread?.url}));
         break;
       }
