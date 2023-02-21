@@ -97,28 +97,10 @@ export const mathOcrCommand = {
           }
         } catch (error) {
           console.error(error);
-        // }
-
-
+          await interaction.reply({content: 'Error parsing image, please try a different image', ephemeral: true});
+       
         }
-          // const questionEmbed = new EmbedBuilder()
-          //     .setColor(0x00FF00)
-          //     .setDescription(`<@${interaction.user.id}> asked a question! 🤖💬`)
-          //     .addFields(createFields(inputPrompt));
-          // const message = await interaction.reply({embeds: [questionEmbed], fetchReply: true});
-          // const thread = await message.startThread({
-          //   name: trimToLength(prompt),
-          //   autoArchiveDuration: 60,
-          //   reason: 'Collecting response from AI',
-          // })
-          // try {
-          //   const newPromptId = await startNewPrompt({user: interaction.user.id, input: prompt, messageId: message.id, messageUrl: message.url});
-          //   await requestAiResponses({prompt, thread, interaction, newPromptId, askingUserId: interaction.user.id})
-          //   await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
-          // } catch (error) {
-          //   console.error(error);
-          //   thread.send('error processing request');
-          // }
+         
         }
   }
 }
