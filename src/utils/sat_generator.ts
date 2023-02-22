@@ -6,10 +6,11 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 interface Question {
     question: string, 
     answer: string, 
-    other_choices: string[]
+    other_choices: string[],
+    id: string,
 }
 
-const SAT_QUESTIONS: Question[] = [
+const SAT_QUESTIONS: Omit<Question, 'id'>[] = [
     {
         "question": "Which of the following is a trigonometric function?",
         "answer": "sine",
@@ -44,25 +45,27 @@ const SAT_QUESTIONS: Question[] = [
         {"question": "If an object has a mass of 5 kilograms on Earth, what would its mass be on the Moon, where gravity is about one-sixth as strong?", "answer": "5 kilograms", "other_choices": ["Less than 1 kilogram", "30 kilograms"]}    
 ]
 
+const getRandomId = () => (Math.random() + 1).toString(36).substring(7);
+
 const getRandomQuestions = (count = 5): Question[] => {
     if (count > SAT_QUESTIONS.length) {
         return getRandomQuestions(SAT_QUESTIONS.length);
     }
-    return take(shuffle(SAT_QUESTIONS), count);
+    return take(shuffle(SAT_QUESTIONS), count).map(question => ({id: getRandomId(), ...question}));
 }
 
-const createQuestionEmbed = (question: Question, index: number) => {
+const createQuestionEmbed = (question: Question) => {
     const questionEmbed = new EmbedBuilder()
         .setDescription(question.question);
     const correctButton = new ButtonBuilder()
         .setLabel(question.answer)
         .setStyle(ButtonStyle.Secondary)
-        .setCustomId(`correct:${index}`);
+        .setCustomId(`sat-correct:${question.id}`);
     const otherChoices = question.other_choices.map((choice, ix) => 
         new ButtonBuilder()
             .setLabel(choice)
             .setStyle(ButtonStyle.Secondary)
-            .setCustomId(`incorrect:${index}:${ix}`)
+            .setCustomId(`sat-incorrect:${question.id}/${ix}`)
     )
     const shuffledButtons = shuffle([correctButton, ...otherChoices]);
     const choicesRow = new ActionRowBuilder<ButtonBuilder>().addComponents(shuffledButtons);
@@ -71,6 +74,6 @@ const createQuestionEmbed = (question: Question, index: number) => {
 
 export const createQuestions = (count = 5) => {
     const questions = getRandomQuestions(count);
-    const allQuestions = questions.map((q, ix) => createQuestionEmbed(q, ix));
+    const allQuestions = questions.map(createQuestionEmbed);
     return allQuestions;
 }

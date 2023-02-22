@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
-import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
+import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
 import { mathOcrCommand, satQuestionCommand, tutorBotCommand } from './commands';
 
 const client = new Client({
@@ -83,6 +83,11 @@ client.on(Events.InteractionCreate, async interaction => {
         await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.RequestHelp});
         const helpThread = await requestHelpFromChannel(interaction, target);
         interaction.update(createHelpRequestedResponse({helpThreadUrl: helpThread?.url}));
+        break;
+      }
+      case 'sat-correct':
+      case 'sat-incorrect': {
+        interaction.update(createSatResponse(interaction, target));
         break;
       }
       default: {
