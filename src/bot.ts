@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
-import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
-import { mathOcrCommand, tutorBotCommand } from './commands';
+import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
+import { mathOcrCommand, satQuestionCommand, tutorBotCommand } from './commands';
 
 const client = new Client({
   intents: [
@@ -19,6 +19,7 @@ const DISCORD_DEV_GUILD_ID = process.env['DISCORD_DEV_GUILD_ID'];
 export const SLASH_COMMANDS = new Collection<string, {data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>, execute: (i: ChatInputCommandInteraction<CacheType>) => void}>();
 SLASH_COMMANDS.set(tutorBotCommand.data.name, tutorBotCommand);
 SLASH_COMMANDS.set(mathOcrCommand.data.name, mathOcrCommand);
+SLASH_COMMANDS.set(satQuestionCommand.data.name, satQuestionCommand);
 
 client.on(Events.ClientReady, () => {
   console.log("I'm in");
@@ -82,6 +83,11 @@ client.on(Events.InteractionCreate, async interaction => {
         await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.RequestHelp});
         const helpThread = await requestHelpFromChannel(interaction, target);
         interaction.update(createHelpRequestedResponse({helpThreadUrl: helpThread?.url}));
+        break;
+      }
+      case 'sat-correct':
+      case 'sat-incorrect': {
+        interaction.update(createSatResponse(interaction, target));
         break;
       }
       default: {
@@ -148,7 +154,6 @@ const registerSlashCommands = async () => {
       console.log('deleting global command', {name: command.name});
       await rest.delete(`${Routes.applicationCommands(APPLICATION_ID)}/${command.id}`);
     }
-
   }
-  console.log(`successfully added ${dataResult.length} slash commands${DISCORD_DEV_GUILD_ID ? `to server ${DISCORD_DEV_GUILD_ID}` : ''}`)
+  console.log(`successfully added ${dataResult.length} slash commands${DISCORD_DEV_GUILD_ID ? ` to server ${DISCORD_DEV_GUILD_ID}` : ''}`)
 }

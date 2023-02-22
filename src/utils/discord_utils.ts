@@ -1,5 +1,5 @@
 import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel } from 'discord.js';
+import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel, ButtonComponent } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
 import { Prompt } from '../models/prompt';
 
@@ -138,4 +138,28 @@ export const trimToLength = (input, maxLength = 100) => {
     return input;
   }
   return `${input.substring(0, maxLength - 3)}...`
+}
+
+export const createSatResponse = (interaction, selection) => {
+  const actionRow = interaction.message.components[0];
+  const buttons = actionRow.components as ButtonComponent[];
+  const updatedButtons = buttons.map(button => {
+    const [action, target] = getActionAndTargetFromId(button.customId);
+    const updatedButton = new ButtonBuilder()
+      .setCustomId(button.customId!)
+      .setLabel(button.label!)
+      .setStyle(button.style)
+      .setDisabled(true);
+    // always mark the correct answer green
+    if (action === 'sat-correct') {
+      updatedButton.setStyle(ButtonStyle.Success);
+    }
+    // if the incorrect answer was selected mark it red
+    if (action === 'sat-incorrect' && selection === target) {
+      updatedButton.setStyle(ButtonStyle.Danger);
+    }
+    return updatedButton;
+  })
+  const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(updatedButtons);
+  return {components: [buttonRow]};
 }
