@@ -4,6 +4,7 @@ import { startNewPrompt } from './db';
 import { requestAiResponses } from './utils/bot_utils';
 import { createFields, createMoreHelpBar, trimToLength } from './utils/discord_utils';
 import { getMathOcrResults } from './utils/math_ocr';
+import { createQuestions } from './utils/sat_generator';
 
 export const tutorBotCommand = {
     data: new SlashCommandBuilder()
@@ -104,3 +105,28 @@ export const mathOcrCommand = {
         }
   }
 }
+
+export const satQuestionCommand = {
+  data: new SlashCommandBuilder()
+      .setName('sat')
+      .setDescription('Requests practice SAT questions from tutor bot'),
+  execute: async (interaction: ChatInputCommandInteraction<CacheType>) => {
+      if (interaction.user.id != interaction.client.user?.id) {
+          try {
+            await interaction.deferReply({ephemeral: true});
+            const satQuestions = await createQuestions(3);
+            if (!satQuestions) {
+              await interaction.reply({content: 'Error generating practice questions', ephemeral: true});
+              return;
+            }
+            satQuestions.forEach(question => interaction.followUp(question));
+        } catch (error) {
+          console.error(error);
+          await interaction.reply({content: 'Error generating questions', ephemeral: true});
+       
+        }
+         
+      }
+  }
+}
+
