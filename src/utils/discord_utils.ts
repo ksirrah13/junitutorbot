@@ -115,7 +115,10 @@ export const requestHelpFromChannel = async (interaction: ButtonInteraction<Cach
   const { messageUrl, input: originalInput } = originalPrompt;
   const questionEmbed = new EmbedBuilder()
   .setColor(0x00FF00)
-  .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬\n[original message](${messageUrl})`)
+  .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬
+  [original message](${messageUrl})
+  
+  Select an answer and thank a tutor by reacting with 👍 on a correct response!`)
   .addFields(createFields(originalInput));
   const message = await (sosChannel as TextChannel).send({embeds: [questionEmbed]});
   const thread = await message.startThread({name: `${trimToLength(originalInput)}` });
