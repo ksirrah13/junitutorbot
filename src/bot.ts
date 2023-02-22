@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction } from 'discord.js';
+import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction, ThreadChannel } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
 import { mathOcrCommand, satQuestionCommand, tutorBotCommand } from './commands';
@@ -7,6 +7,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
   ]
 })
 
@@ -111,6 +112,22 @@ client.on(Events.InteractionCreate, async interaction => {
 
   }
 });
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+  if (reaction.emoji.name !== '👍') return; // only care about thumbs up
+  if (!reaction.message.channel.isThread()) return; // only dealing with thread reactions
+
+  const starterMessage = await (reaction.message.channel as ThreadChannel).fetchStarterMessage();
+  const extractUser = new RegExp('<@(.*)> asked a question');
+  const starterUser = extractUser.exec(starterMessage?.embeds[0]?.data.description ?? '')?.[1]; // parse from message
+  if (!starterUser) return; // can't who should be allowed so don't do anything
+
+  if (starterUser !== user.id) {
+    reaction.remove();
+    return;
+  }
+  await starterMessage?.reply({content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!`});
+})
 
 client.on(Events.Error, (error) => {
   console.error(error);
