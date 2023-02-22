@@ -79,8 +79,9 @@ export const mathOcrCommand = {
             }
             const { data } : {data: Record<string, any>[]} = ocrResult;
             // hacked for now to only have one data response
+            const result = data?.[0]?.value;
             // const imageFieldResults = (data ?? []).map(result => ({name: result.type, value: result.value}))
-            const imageFieldResults = [{name: "Result", "value": data?.[0]?.value}]
+            const imageFieldResults = [{name: "Result", "value": result }]
             const questionEmbed = new EmbedBuilder()
               .setColor(0x00FF00)
               .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the parsed results! 🤖💬`)
@@ -92,13 +93,11 @@ export const mathOcrCommand = {
             reason: 'Collecting response from AI',
           })
           // there should only be one result for data for now (hacked in static response)
-          for (const result of data) {
-            // const annotatedPrompt = `The math problem is given in ${result.type} format. Solve the following problem. ${result.value}`;
-            const annotatedPrompt = result.data;
-            const newPromptId = await startNewPrompt({user: interaction.user.id, input: annotatedPrompt, messageId: message.id, messageUrl: message.url});
-            await requestAiResponses({prompt: annotatedPrompt, thread, interaction, newPromptId, askingUserId: interaction.user.id})
-            await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
-          }
+          // const annotatedPrompt = `The math problem is given in ${result.type} format. Solve the following problem. ${result.value}`;
+          const newPromptId = await startNewPrompt({user: interaction.user.id, input: result, messageId: message.id, messageUrl: message.url});
+          await requestAiResponses({prompt: result, thread, interaction, newPromptId, askingUserId: interaction.user.id})
+          await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
+          
         } catch (error) {
           console.error(error);
           await interaction.reply({content: 'Error parsing image, please try a different image', ephemeral: true});

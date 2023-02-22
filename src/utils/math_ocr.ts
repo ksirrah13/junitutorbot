@@ -53,7 +53,7 @@ const HANDWRITTEN_EQUATION = {
     "confidence": 0.9982182085336344,
     "confidence_rate": 0.9982182085336344,
     "data": [
-        {"type": "wolfram", "value": "Limit[(x^(2) + 9)/(x - 3), x -> 3]"},
+        {"type": "wolfram", "value": "lim x->3 (x^2 + 9)/(x - 3)"},
         // {
         //     "type": "asciimath",
         //     "value": "lim_(x rarr3)((x^(2)+9)/(x-3))"
@@ -71,7 +71,7 @@ const SYSTEM_OF_EQUATIONS = {
     "confidence": 0.9960272582188906,
     "confidence_rate": 0.9960272582188906,
     "data": [
-        { "type": "wolfram", "value": "[2x+8y=21,6x-4y=14]"}
+        { "type": "wolfram", "value": "{2x+8y=21,6x-4y=14}"}
         // {
         //     "type": "asciimath",
         //     "value": "{[2x+8y=21],[6x-4y=14]:}"
