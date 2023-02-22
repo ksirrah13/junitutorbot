@@ -119,7 +119,7 @@ export const satQuestionCommand = {
   execute: async (interaction: ChatInputCommandInteraction<CacheType>) => {
       if (interaction.user.id != interaction.client.user?.id) {
           try {
-            await interaction.deferReply({ephemeral: true});
+            await interaction.reply(`<@${interaction.user.id}> is practicing SAT questions!\n\nStart your own practice with \`/sat\``); 
             const count = interaction.options.getNumber('count') ?? 3;
             const satQuestions = await createQuestions(count);
             if (!satQuestions) {
