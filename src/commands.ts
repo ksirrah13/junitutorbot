@@ -109,12 +109,19 @@ export const mathOcrCommand = {
 export const satQuestionCommand = {
   data: new SlashCommandBuilder()
       .setName('sat')
-      .setDescription('Requests practice SAT questions from tutor bot'),
+      .setDescription('Requests practice SAT questions from tutor bot')
+      .addNumberOption(option =>
+        option.setName('count')
+          .setDescription('Number of practice questions to create')
+          .setRequired(false)
+          .setMinValue(1)
+          .setMaxValue(10)),
   execute: async (interaction: ChatInputCommandInteraction<CacheType>) => {
       if (interaction.user.id != interaction.client.user?.id) {
           try {
             await interaction.deferReply({ephemeral: true});
-            const satQuestions = await createQuestions(3);
+            const count = interaction.options.getNumber('count') ?? 3;
+            const satQuestions = await createQuestions(count);
             if (!satQuestions) {
               await interaction.reply({content: 'Error generating practice questions', ephemeral: true});
               return;
