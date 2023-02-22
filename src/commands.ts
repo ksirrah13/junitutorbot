@@ -78,20 +78,23 @@ export const mathOcrCommand = {
               return;
             }
             const { data } : {data: Record<string, any>[]} = ocrResult;
-            const imageFieldResults = (data ?? []).map(result => ({name: result.type, value: result.value}))
+            // hacked for now to only have one data response
+            // const imageFieldResults = (data ?? []).map(result => ({name: result.type, value: result.value}))
+            const imageFieldResults = [{name: "Result", "value": data?.[0]?.value}]
             const questionEmbed = new EmbedBuilder()
               .setColor(0x00FF00)
               .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the parsed results! 🤖💬`)
               .addFields(imageFieldResults);
           const message = await interaction.reply({embeds: [questionEmbed], fetchReply: true});
           const thread = await message.startThread({
-            name: trimToLength('processing image results'),
+            name: trimToLength(`Parsed from image: ${data?.[0]?.value}`),
             autoArchiveDuration: 60,
             reason: 'Collecting response from AI',
           })
+          // there should only be one result for data for now (hacked in static response)
           for (const result of data) {
-            const annotatedPrompt = `The math problem is given in ${result.type} format. Solve the following problem. ${result.value}`;
-            console.log({annotatedPrompt});
+            // const annotatedPrompt = `The math problem is given in ${result.type} format. Solve the following problem. ${result.value}`;
+            const annotatedPrompt = result.data;
             const newPromptId = await startNewPrompt({user: interaction.user.id, input: annotatedPrompt, messageId: message.id, messageUrl: message.url});
             await requestAiResponses({prompt: annotatedPrompt, thread, interaction, newPromptId, askingUserId: interaction.user.id})
             await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
