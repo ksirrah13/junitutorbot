@@ -30,13 +30,42 @@ export const createFields = (text, fieldName = '\u200B') => {
   if (text.length <= MAX_FIELD_LENGTH) {
     return { name: fieldName, value: text };
   }
-  // naive split which doesn't break on words or anything
-  const chunkedFields = chunkString(text, MAX_FIELD_LENGTH);
+  const chunkedFields = chunkOnNewlines(text, MAX_FIELD_LENGTH);
   return chunkedFields.map(value => ({ name: fieldName, value }));
 }
 
 const chunkString = (str, length) => {
   return str.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
+}
+
+const chunkOnNewlines = (str, length) => {
+  if (!str) return;
+  const newlineChunks = str.split('\n');
+  // no newlines so just chunk it naively
+  if (newlineChunks.length < 2) {
+    return chunkString(str, length);
+  }
+  let currentChunkLength = 0;
+  const chunkedResults: string[] = [];
+  let currentChunk: string[] = [];
+  newlineChunks.forEach(newChunk => {
+    // need to include the potential newline characters added later
+    if (currentChunkLength + newChunk.length + 2 <= length) {
+      currentChunk.push(newChunk);
+      currentChunkLength = currentChunkLength + newChunk.length + 2;
+    } else {
+      // need to start a new chunk
+      const joinedChunk = currentChunk.join('\n');
+      chunkedResults.push(joinedChunk);
+      currentChunk = [newChunk];
+      currentChunkLength = newChunk.length;
+    }
+  })
+  if (currentChunk.length > 0) {
+    const joinedChunk = currentChunk.join('\n');
+    chunkedResults.push(joinedChunk);
+  }
+  return chunkedResults;
 }
 
 export const createEmbedImages = (title, images) => {
