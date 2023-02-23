@@ -123,7 +123,12 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   if (!starterUser) return; // can't who should be allowed so don't do anything
 
   if (starterUser !== user.id) {
-    reaction.remove();
+    // this will fail if the user message is for an admin
+    try {
+      reaction.remove();
+    } catch (error) {
+      console.log('failed to remove reaction from admin user', {author: reaction.message.author?.username, user: user.username})
+    }
     return;
   }
   await starterMessage?.reply({content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!`});
