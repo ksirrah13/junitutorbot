@@ -115,7 +115,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
-  if (reaction.emoji.name !== '👍') return; // only care about thumbs up
+  if (reaction.emoji.name !== '🧠') return;
   if (!reaction.message.channel.isThread()) return; // only dealing with thread reactions
 
   const starterMessage = await (reaction.message.channel as ThreadChannel).fetchStarterMessage();
