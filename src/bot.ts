@@ -1,7 +1,8 @@
-import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction, ThreadChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction, ThreadChannel, TextChannel } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
 import { mathOcrCommand, satQuestionCommand, tutorBotCommand } from './commands';
+import { EmbedBuilder } from '@discordjs/builders';
 
 const client = new Client({
   intents: [
@@ -114,16 +115,17 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
-  if (reaction.emoji.name !== '👍') return; // only care about thumbs up
+  if (reaction.emoji.name !== '🧠') return;
   if (!reaction.message.channel.isThread()) return; // only dealing with thread reactions
 
   const starterMessage = await (reaction.message.channel as ThreadChannel).fetchStarterMessage();
-  const extractUser = new RegExp('<@(.*)> asked a question');
-  const starterUser = extractUser.exec(starterMessage?.embeds[0]?.data.description ?? '')?.[1]; // parse from message
-  if (!starterUser) return; // can't who should be allowed so don't do anything
+  const starterMessageDescription = starterMessage?.embeds[0]?.data.description ?? '';
+  const extractUser = new RegExp('<@(\\d*)> asked a question');
+  const starterUser = extractUser.exec(starterMessageDescription)?.[1]; // parse from message
+  if (!starterUser) return; // can't determine who should be allowed so don't do anything
 
   if (starterUser !== user.id) {
-    // this will fail if the user message is for an admin
+    // this will fail if the user message or reaction is from an admin
     try {
       await reaction.remove();
     } catch (error) {
@@ -131,7 +133,25 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     }
     return;
   }
-  await starterMessage?.reply({ content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!` });
+  // extract our original message and edit to add a notice of new answer
+  const extractOriginalMessage = new RegExp('https:\/\/discord\.com\/channels\/(\\d*)\/(\\d*)\/(\\d*)');
+  // const extractOriginalMessage = new RegExp('\[original message\]\((.*)\)');
+  const originalMessageData = extractOriginalMessage.exec(starterMessageDescription);
+  const originalChannel: TextChannel = client.channels.cache.get(originalMessageData?.[2] ?? '') as TextChannel;
+  const originalMessage = await originalChannel.messages.fetch(originalMessageData?.[3] ?? '');
+  if (originalMessage) {
+    // post update to original message
+    const newAnswer = new EmbedBuilder()
+      .setColor(0x00FF00)
+      .setDescription(`<@${reaction.message.author?.id}> answered in <#${reaction.message.channelId}>!
+    [see their answer](${reaction.message.url})`);
+    await originalMessage.edit({embeds: [...originalMessage.embeds, newAnswer ]})
+  }
+  // add embed to original sos message
+  const pointsAwardedEmbed = new EmbedBuilder()
+    .setColor(0x00FF00)
+    .setDescription(`Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!`);
+  await starterMessage?.edit({embeds: [...starterMessage.embeds, pointsAwardedEmbed]});
 })
 
 client.on(Events.Error, (error) => {
