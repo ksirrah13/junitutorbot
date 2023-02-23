@@ -122,7 +122,6 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   const starterMessageDescription = starterMessage?.embeds[0]?.data.description ?? '';
   const extractUser = new RegExp('<@(\\d*)> asked a question');
   const starterUser = extractUser.exec(starterMessageDescription)?.[1]; // parse from message
-  console.log('extract user', starterUser);
   if (!starterUser) return; // can't determine who should be allowed so don't do anything
 
   if (starterUser !== user.id) {
@@ -139,16 +138,20 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   // const extractOriginalMessage = new RegExp('\[original message\]\((.*)\)');
   const originalMessageData = extractOriginalMessage.exec(starterMessageDescription);
   const originalChannel: TextChannel = client.channels.cache.get(originalMessageData?.[2] ?? '') as TextChannel;
-  console.dir(originalChannel);
   const originalMessage = await originalChannel.messages.fetch(originalMessageData?.[3] ?? '');
-  console.dir(originalMessage);
   if (originalMessage) {
     // post update to original message
-    const newAnswer = new EmbedBuilder().setDescription('New Ansewr from Tutor SOS!');
+    const newAnswer = new EmbedBuilder()
+      .setColor(0x00FF00)
+      .setDescription(`<@${reaction.message.author?.id}> answered in <#${reaction.message.channelId}>!
+    [see their answer](${reaction.message.url})`);
     await originalMessage.edit({embeds: [...originalMessage.embeds, newAnswer ]})
   }
   // add embed to original sos message
-  await starterMessage?.reply({ content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!` });
+  const pointsAwardedEmbed = new EmbedBuilder()
+    .setColor(0x00FF00)
+    .setDescription(`Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!`);
+  await starterMessage?.edit({embeds: [...starterMessage.embeds, pointsAwardedEmbed]});
 })
 
 client.on(Events.Error, (error) => {
