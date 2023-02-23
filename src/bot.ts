@@ -143,7 +143,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     // post update to original message
     const newAnswer = new EmbedBuilder()
       .setColor(0x00FF00)
-      .setDescription(`<@${reaction.message.author?.id}> answered in <#${reaction.message.channelId}>!
+      .setDescription(`<@${reaction.message.author?.id}> answered in <#${starterMessage?.channelId}>
     [see their answer](${reaction.message.url})`);
     await originalMessage.edit({embeds: [originalMessage.embeds[0]!, newAnswer ]})
   }

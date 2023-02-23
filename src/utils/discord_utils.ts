@@ -71,7 +71,7 @@ type CreateHelperOverloads = {
 export const createHelpRequestedResponse = (
   {helpThreadUrl}: 
   {helpThreadUrl?: string}): MessageCreateOptions => {
-    return {content: `Help is on the way!${helpThreadUrl ? ` [view thread >>](${helpThreadUrl})` : ''}`, components: []};
+    return {content: `Help is on the way!${helpThreadUrl ? ` \n[see thread](${helpThreadUrl})` : ''}`, components: []};
 }
 
 export const createMoreHelpBar: CreateHelperOverloads = (
@@ -124,7 +124,8 @@ export const requestHelpFromChannel = async (interaction: ButtonInteraction<Cach
   const thread = await message.startThread({name: `${trimToLength(originalInput)}` });
   const helpRequestedEmbed = new EmbedBuilder()
     .setColor(0x00FF00)
-    .setDescription(`<@${interaction.user.id}> requested help in <#${thread.id}>`);
+    .setDescription(`<@${interaction.user.id}> requested help in <#${message.channelId}>
+    [see thread](${thread.url})`);
   const originalMessage = interaction.channel?.messages.cache.get(messageId ?? '');
   if (originalMessage) {
     await originalMessage.edit({embeds: [...originalMessage.embeds, helpRequestedEmbed]});
