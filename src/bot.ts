@@ -145,7 +145,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
       .setColor(0x00FF00)
       .setDescription(`<@${reaction.message.author?.id}> answered in <#${reaction.message.channelId}>!
     [see their answer](${reaction.message.url})`);
-    await originalMessage.edit({embeds: [...originalMessage.embeds, newAnswer ]})
+    await originalMessage.edit({embeds: [originalMessage.embeds[0]!, newAnswer ]})
   }
   // add embed to original sos message
   const pointsAwardedEmbed = new EmbedBuilder()

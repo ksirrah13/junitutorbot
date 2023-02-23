@@ -112,7 +112,7 @@ export const requestHelpFromChannel = async (interaction: ButtonInteraction<Cach
     console.log('No prompt found for prompt id', {promptId});
     return;
   }
-  const { messageUrl, input: originalInput } = originalPrompt;
+  const { messageUrl, messageId, input: originalInput } = originalPrompt;
   const questionEmbed = new EmbedBuilder()
     .setColor(0x00FF00)
     .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬
@@ -122,6 +122,13 @@ export const requestHelpFromChannel = async (interaction: ButtonInteraction<Cach
     .addFields(createFields(originalInput, 'Question'));
   const message = await (sosChannel as TextChannel).send({embeds: [questionEmbed]});
   const thread = await message.startThread({name: `${trimToLength(originalInput)}` });
+  const helpRequestedEmbed = new EmbedBuilder()
+    .setColor(0x00FF00)
+    .setDescription(`<@${interaction.user.id}> requested help in <#${thread.id}>`);
+  const originalMessage = interaction.channel?.messages.cache.get(messageId ?? '');
+  if (originalMessage) {
+    await originalMessage.edit({embeds: [...originalMessage.embeds, helpRequestedEmbed]});
+  }
   return thread;
 }
 
