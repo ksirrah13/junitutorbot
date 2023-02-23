@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, Cac
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
 import { mathOcrCommand, satQuestionCommand, tutorBotCommand } from './commands';
+import { EmbedBuilder } from '@discordjs/builders';
 
 const client = new Client({
   intents: [
@@ -138,11 +139,15 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   // const extractOriginalMessage = new RegExp('\[original message\]\((.*)\)');
   const originalMessageData = extractOriginalMessage.exec(starterMessageDescription);
   const originalChannel: TextChannel = client.channels.cache.get(originalMessageData?.[2] ?? '') as TextChannel;
-  const originalMessage = originalChannel.messages.cache.get(originalMessageData?.[3] ?? '');
+  console.dir(originalChannel);
+  const originalMessage = await originalChannel.messages.fetch(originalMessageData?.[3] ?? '');
+  console.dir(originalMessage);
   if (originalMessage) {
-    console.dir(originalMessage);
+    // post update to original message
+    const newAnswer = new EmbedBuilder().setDescription('New Ansewr from Tutor SOS!');
+    await originalMessage.edit({embeds: [...originalMessage.embeds, newAnswer ]})
   }
-  console.log({starterMessageDescription, starterUser, extractOriginalMessage, originalUrl});
+  // add embed to original sos message
   await starterMessage?.reply({ content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!` });
 })
 
