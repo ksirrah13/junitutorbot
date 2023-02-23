@@ -17,7 +17,7 @@ const APPLICATION_ID = process.env['DISCORD_APPLICATION_ID'];
 const DISCORD_DEV_GUILD_ID = process.env['DISCORD_DEV_GUILD_ID'];
 
 // Register slash commands
-export const SLASH_COMMANDS = new Collection<string, {data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>, execute: (i: ChatInputCommandInteraction<CacheType>) => void}>();
+export const SLASH_COMMANDS = new Collection<string, { data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>, execute: (i: ChatInputCommandInteraction<CacheType>) => void }>();
 SLASH_COMMANDS.set(tutorBotCommand.data.name, tutorBotCommand);
 SLASH_COMMANDS.set(mathOcrCommand.data.name, mathOcrCommand);
 SLASH_COMMANDS.set(satQuestionCommand.data.name, satQuestionCommand);
@@ -34,26 +34,26 @@ client.on(Events.MessageCreate, async msg => {
       return;
     }
     if (inputPrompt.includes(`<@${BOT_MENTION_ID}>`)) {
-      msg.reply({content: 'Hi! Want to talk to me? Use my fancy new slash command /tutorbot'})
+      msg.reply({ content: 'Hi! Want to talk to me? Use my fancy new slash command /tutorbot' })
       return;
     }
   }
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isChatInputCommand()) return;
-  
+  if (!interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isChatInputCommand()) return;
+
   if (interaction.isChatInputCommand()) {
     const commandToExecute = SLASH_COMMANDS.get(interaction.commandName)
     if (!commandToExecute) {
-      console.log('no matching command', {name: interaction.commandName});
+      console.log('no matching command', { name: interaction.commandName });
       return;
     }
 
     try {
       await commandToExecute.execute(interaction);
     } catch (error) {
-      console.log('error executing slash command', {command: interaction.commandName, error})
+      console.log('error executing slash command', { command: interaction.commandName, error })
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
     return;
@@ -61,29 +61,29 @@ client.on(Events.InteractionCreate, async interaction => {
 
 
   const [action, target] = getActionAndTargetFromId(interaction.customId);
-  console.log('executing interaction', {action, target});
+  console.log('executing interaction', { action, target });
 
   if (interaction.isButton()) {
     switch (action) {
       case 'thumbs-up': {
-        const counts = await incrementRatingCount({responseId: target, rating: Rating.Yes});
-        interaction.update({components: [createRatingsComponents(target, counts)]})
+        const counts = await incrementRatingCount({ responseId: target, rating: Rating.Yes });
+        interaction.update({ components: [createRatingsComponents(target, counts)] })
         break;
       }
       case 'thumbs-down': {
-        const counts = await incrementRatingCount({responseId: target, rating: Rating.No});
-        interaction.update({components: [createRatingsComponents(target, counts)]})
+        const counts = await incrementRatingCount({ responseId: target, rating: Rating.No });
+        interaction.update({ components: [createRatingsComponents(target, counts)] })
         break;
       }
-      case 'answered':  {
-        await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.Answered});
-        interaction.update(createMoreHelpBar({promptId: target, answerResult: AnswerResult.Answered}))
+      case 'answered': {
+        await setPromptAnsweredResult({ promptId: target, answerResult: AnswerResult.Answered });
+        interaction.update(createMoreHelpBar({ promptId: target, answerResult: AnswerResult.Answered }))
         break;
       }
-      case 'request-help':  {
-        await setPromptAnsweredResult({promptId: target, answerResult: AnswerResult.RequestHelp});
+      case 'request-help': {
+        await setPromptAnsweredResult({ promptId: target, answerResult: AnswerResult.RequestHelp });
         const helpThread = await requestHelpFromChannel(interaction, target);
-        interaction.update(createHelpRequestedResponse({helpThreadUrl: helpThread?.url}));
+        interaction.update(createHelpRequestedResponse({ helpThreadUrl: helpThread?.url }));
         break;
       }
       case 'sat-correct':
@@ -100,9 +100,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
   if (interaction.isStringSelectMenu()) {
     switch (action) {
-      case 'selected-best':  {
-        await updateSelectedAnswerSource({promptId: target, source: interaction.values[0]});
-        interaction.reply({content: `Selected solution: ${interaction.values[0]}`, ephemeral: true});
+      case 'selected-best': {
+        await updateSelectedAnswerSource({ promptId: target, source: interaction.values[0] });
+        interaction.reply({ content: `Selected solution: ${interaction.values[0]}`, ephemeral: true });
         break;
       }
       default: {
@@ -125,13 +125,13 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   if (starterUser !== user.id) {
     // this will fail if the user message is for an admin
     try {
-      reaction.remove();
+      await reaction.remove();
     } catch (error) {
-      console.log('failed to remove reaction from admin user', {author: reaction.message.author?.username, user: user.username})
+      console.log('failed to remove reaction from admin user', { author: reaction.message.author?.username, user: user.username })
     }
     return;
   }
-  await starterMessage?.reply({content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!`});
+  await starterMessage?.reply({ content: `Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!` });
 })
 
 client.on(Events.Error, (error) => {
@@ -163,17 +163,17 @@ const registerSlashCommands = async () => {
     console.log('missing bot token or application id to register commands!');
     return;
   }
-  const rest = new REST({version: '10'}).setToken(BOT_TOKEN);
+  const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
 
-  const commandsToAdd = SLASH_COMMANDS.map(({data}) => data.toJSON());
+  const commandsToAdd = SLASH_COMMANDS.map(({ data }) => data.toJSON());
   const dataResult: any = DISCORD_DEV_GUILD_ID // only target a specific server
-    ? await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, DISCORD_DEV_GUILD_ID), {body: commandsToAdd})
-    : await rest.put(Routes.applicationCommands(APPLICATION_ID), {body: commandsToAdd});
+    ? await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, DISCORD_DEV_GUILD_ID), { body: commandsToAdd })
+    : await rest.put(Routes.applicationCommands(APPLICATION_ID), { body: commandsToAdd });
   if (DISCORD_DEV_GUILD_ID && process.env.DEV_MODE === 'true') {
     // clean up global commands since the guild specific will be duplicates
-    const globalCommands  = await rest.get(Routes.applicationCommands(APPLICATION_ID)) as Record<string, any>[];
+    const globalCommands = await rest.get(Routes.applicationCommands(APPLICATION_ID)) as Record<string, any>[];
     for (const command of globalCommands) {
-      console.log('deleting global command', {name: command.name});
+      console.log('deleting global command', { name: command.name });
       await rest.delete(`${Routes.applicationCommands(APPLICATION_ID)}/${command.id}`);
     }
   }
