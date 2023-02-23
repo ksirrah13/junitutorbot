@@ -26,13 +26,13 @@ export const createRatingEmbed = () => {
 }
 
 const MAX_FIELD_LENGTH = 1024
-export const createFields = text => {
+export const createFields = (text, fieldName = '\u200B') => {
   if (text.length <= MAX_FIELD_LENGTH) {
-    return { name: '\u200B', value: text };
+    return { name: fieldName, value: text };
   }
   // naive split which doesn't break on words or anything
   const chunkedFields = chunkString(text, MAX_FIELD_LENGTH);
-  return chunkedFields.map(value => ({ name: '\u200B', value }));
+  return chunkedFields.map(value => ({ name: fieldName, value }));
 }
 
 const chunkString = (str, length) => {
@@ -114,12 +114,12 @@ export const requestHelpFromChannel = async (interaction: ButtonInteraction<Cach
   }
   const { messageUrl, input: originalInput } = originalPrompt;
   const questionEmbed = new EmbedBuilder()
-  .setColor(0x00FF00)
-  .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬
-  [original message](${messageUrl})
-  
-  Select an answer and thank a tutor by reacting with 👍 on a correct response!`)
-  .addFields(createFields(originalInput));
+    .setColor(0x00FF00)
+    .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬
+    [original message](${messageUrl})
+    
+    Thank your SOS helper by reacting with :brain: on their reply!`)
+    .addFields(createFields(originalInput, 'Question'));
   const message = await (sosChannel as TextChannel).send({embeds: [questionEmbed]});
   const thread = await message.startThread({name: `${trimToLength(originalInput)}` });
   return thread;
