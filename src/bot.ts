@@ -1,8 +1,8 @@
 import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction, ThreadChannel, TextChannel } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
-import { mathOcrCommand, satQuestionCommand, tutorBotCommand } from './commands';
-import { EmbedBuilder } from '@discordjs/builders';
+import { satQuestionCommand, tutorBotCommand } from './commands';
+import { EmbedBuilder, SlashCommandSubcommandsOnlyBuilder } from '@discordjs/builders';
 
 const client = new Client({
   intents: [
@@ -18,9 +18,9 @@ const APPLICATION_ID = process.env['DISCORD_APPLICATION_ID'];
 const DISCORD_DEV_GUILD_ID = process.env['DISCORD_DEV_GUILD_ID'];
 
 // Register slash commands
-export const SLASH_COMMANDS = new Collection<string, { data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>, execute: (i: ChatInputCommandInteraction<CacheType>) => void }>();
+export const SLASH_COMMANDS = new Collection<string, { data: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'> | SlashCommandSubcommandsOnlyBuilder, execute: (i: ChatInputCommandInteraction<CacheType>) => void }>();
 SLASH_COMMANDS.set(tutorBotCommand.data.name, tutorBotCommand);
-SLASH_COMMANDS.set(mathOcrCommand.data.name, mathOcrCommand);
+// SLASH_COMMANDS.set(mathOcrCommand.data.name, mathOcrCommand);
 SLASH_COMMANDS.set(satQuestionCommand.data.name, satQuestionCommand);
 
 client.on(Events.ClientReady, () => {
