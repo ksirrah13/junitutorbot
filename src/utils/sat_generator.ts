@@ -11,6 +11,20 @@ interface Question {
 }
 
 const SAT_QUESTIONS: Omit<Question, 'id'>[] = [
+    {question: "The intricacies of the legal case were navigated with consummate _______.", other_choices: ["lethargy", "frivolity","verbosity"], answer: "dexterity"},
+    
+    {question: "The professor’s _______ knowledge of the subject enabled a deep, multifaceted exploration of the topic.", other_choices: ["perfunctory","embryonic","regressive"], answer: "erudite"},
+    
+    {question: "The research scientists were assiduous in their work, tirelessly dedicating every waking hour to the project with great diligence and unwavering focus. Which of the following words best replaces assiduous in the above sentence?", other_choices: ["Intermittent", "Lackadaisical", "Frenetic"], answer: "Rigorous"},
+    
+    {question: "The product of two consecutive integers is 132. What is the greater integer?", other_choices: ["10", "11", "13"], answer: "12"},
+    
+    
+    {question: "If 3x + 7 = 19, what is the value of x?", other_choices: ["3", "5", "6"], answer: "4"},
+    ]
+
+
+const SAT_QUESTIONS_OLD: Omit<Question, 'id'>[] = [
     {
         "question": "Which of the following is a trigonometric function?",
         "answer": "sine",
