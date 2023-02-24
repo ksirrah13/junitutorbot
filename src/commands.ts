@@ -130,7 +130,7 @@ const handleImageInput = async (image, interaction) => {
     return;
   }
   // match my specific file name
-  const {name} = image;
+  const {name, url} = image;
   if (!name) {
     console.log('no name for image attachment!');
     return;
@@ -148,8 +148,9 @@ const handleImageInput = async (image, interaction) => {
     const imageFieldResults = [{name: "Result", "value": result }]
     const questionEmbed = new EmbedBuilder()
       .setColor(0x00FF00)
-      .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the parsed results! 🤖💬`)
-      .addFields(imageFieldResults);
+      .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the results! 🤖💬`)
+      .addFields(imageFieldResults)
+      .setThumbnail(url);
   const message = await interaction.reply({embeds: [questionEmbed], fetchReply: true});
   const thread = await message.startThread({
     name: trimToLength(`Parsed from image: ${data?.[0]?.value}`),
