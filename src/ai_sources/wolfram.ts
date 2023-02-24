@@ -1,6 +1,6 @@
 import { recordNewResponse } from "../db";
 import { processWorlframPods } from '../utils/worlfram_utils';
-import { createEmbedWrapper, createEmbedImages } from '../utils/discord_utils';
+import { createEmbedWrapper } from '../utils/discord_utils';
 
 
 // TODO add a precheck that verifies wolfram can answer the question
@@ -63,9 +63,5 @@ const sendTextResponse = async (results, thread, responseId, preferredResponse, 
     return;
   }
   await thread.send(embed);
-}
-
-const sendImageResponse = async (images, thread) => {
-  await thread.send({ embeds: [createEmbedImages('Wolfram', images)] });
 }
 
