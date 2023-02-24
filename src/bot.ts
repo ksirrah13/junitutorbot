@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction, ThreadChannel, TextChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Events, Collection, SlashCommandBuilder, CacheType, REST, Routes, ChatInputCommandInteraction, ThreadChannel, TextChannel, Colors } from 'discord.js';
 import { incrementRatingCount, Rating, updateSelectedAnswerSource, setPromptAnsweredResult, AnswerResult } from './db';
 import { createHelpRequestedResponse, createMoreHelpBar, createRatingsComponents, createSatResponse, getActionAndTargetFromId, requestHelpFromChannel } from './utils/discord_utils';
 import { satQuestionCommand, tutorBotCommand } from './commands';
@@ -142,16 +142,17 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   if (originalMessage) {
     // post update to original message
     const newAnswer = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(Colors.Green)
       .setDescription(`<@${reaction.message.author?.id}> answered in <#${starterMessage?.channelId}>
     [see their answer](${reaction.message.url})`);
     await originalMessage.edit({embeds: [originalMessage.embeds[0]!, newAnswer ]})
   }
   // add embed to original sos message
   const pointsAwardedEmbed = new EmbedBuilder()
-    .setColor(0x00FF00)
+    .setColor(Colors.Green)
     .setDescription(`Awarding points to <@${reaction.message.author?.id}>! Thanks for the help!`);
-  await starterMessage?.edit({embeds: [...starterMessage.embeds, pointsAwardedEmbed]});
+  const updatedMessageEmbeds = starterMessage?.embeds.map(embed => new EmbedBuilder().setColor(Colors.Green).setDescription(embed.description)) ?? [];
+  await starterMessage?.edit({embeds: [...updatedMessageEmbeds, pointsAwardedEmbed]});
 })
 
 client.on(Events.Error, (error) => {

@@ -1,5 +1,5 @@
 import { EmbedBuilder } from '@discordjs/builders';
-import { CacheType, SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { CacheType, SlashCommandBuilder, ChatInputCommandInteraction, Colors } from 'discord.js';
 import { startNewPrompt } from './db';
 import { requestAiResponses } from './utils/bot_utils';
 import { createFields, createMoreHelpBar, trimToLength } from './utils/discord_utils';
@@ -104,7 +104,7 @@ const handleTextInput = async (inputPrompt, interaction) => {
   }
   const prompt = inputPrompt.trim();
   const questionEmbed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(Colors.Green)
       .setDescription(`<@${interaction.user.id}> asked a question! 🤖💬`)
       .addFields(createFields(inputPrompt));
   const message = await interaction.reply({embeds: [questionEmbed], fetchReply: true});
@@ -147,7 +147,7 @@ const handleImageInput = async (image, interaction) => {
     // const imageFieldResults = (data ?? []).map(result => ({name: result.type, value: result.value}))
     const imageFieldResults = [{name: "Result", "value": result }]
     const questionEmbed = new EmbedBuilder()
-      .setColor(0x00FF00)
+      .setColor(Colors.Green)
       .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the results! 🤖💬`)
       .addFields(imageFieldResults)
       .setThumbnail(url);

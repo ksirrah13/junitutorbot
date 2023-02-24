@@ -1,10 +1,10 @@
 import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel, ButtonComponent } from 'discord.js';
+import { EmbedBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel, ButtonComponent, Colors } from 'discord.js';
 import { AnswerResult, AnswerResultChoice } from '../db';
 import { Prompt } from '../models/prompt';
 
 export const createEmbedWrapper = ({title, results, responseId, preferredResponse}) => {
-  const color = preferredResponse ? 0x0099FF : 0xFF6600;
+  const color = preferredResponse ? Colors.Blue : Colors.Orange;
   const maskedTitle = preferredResponse ? 'Response' : title;
   const resultsEmbed = new EmbedBuilder()
     .setColor(color)
@@ -15,14 +15,6 @@ export const createEmbedWrapper = ({title, results, responseId, preferredRespons
   return preferredResponse 
     ? {embeds: [resultsEmbed], components: [createRatingsComponents(responseId)]} 
     : {embeds: [resultsEmbed]};
-}
-
-export const createRatingEmbed = () => {
-  const embed = new EmbedBuilder()
-    .setColor(0x00FF00)
-    .setTitle('Did this answer your question?')
-    .setDescription('Rate your answers to help others find solutions!');
-  return embed;
 }
 
 const MAX_FIELD_LENGTH = 1024
@@ -66,15 +58,6 @@ const chunkOnNewlines = (str, length) => {
     chunkedResults.push(joinedChunk);
   }
   return chunkedResults;
-}
-
-export const createEmbedImages = (title, images) => {
-  const embed = new EmbedBuilder()
-    .setColor(0x0099FF)
-    .setTitle(title)
-  images.forEach(image => embed.setImage(image));
-  embed.setTimestamp();
-  return embed;
 }
 
 export const createRatingsComponents = (responseId: String, voteCounts?: {yes?: number, no?: number}) => {
@@ -143,16 +126,16 @@ export const requestHelpFromChannel = async (interaction: ButtonInteraction<Cach
   }
   const { messageUrl, messageId, input: originalInput } = originalPrompt;
   const questionEmbed = new EmbedBuilder()
-    .setColor(0x00FF00)
+    .setColor(Colors.Orange)
     .setDescription(`<@${interaction.user.id}> asked a question in <#${interaction.channelId}>! 🤖💬
     [original message](${messageUrl})
     
-    Thank your SOS helper by reacting with :brain: on their reply!`)
+    <@${interaction.user.id}> can thank their SOS helper by reacting with :brain: on their reply!`)
     .addFields(createFields(originalInput, 'Question'));
   const message = await (sosChannel as TextChannel).send({embeds: [questionEmbed]});
   const thread = await message.startThread({name: `${trimToLength(originalInput)}` });
   const helpRequestedEmbed = new EmbedBuilder()
-    .setColor(0x00FF00)
+    .setColor(Colors.Orange)
     .setDescription(`<@${interaction.user.id}> requested help in <#${message.channelId}>
     [see thread](${thread.url})`);
   const originalMessage = interaction.channel?.messages.cache.get(messageId ?? '');
