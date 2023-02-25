@@ -1,5 +1,6 @@
 import { ActionRowBuilder } from '@discordjs/builders';
-import { EmbedBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, MessagePayload, ButtonInteraction, CacheType, TextChannel, AnyThreadChannel, ButtonComponent, Colors } from 'discord.js';
+import { EmbedBuilder, ButtonBuilder, ButtonStyle, MessageCreateOptions, InteractionReplyOptions, ButtonInteraction, CacheType, TextChannel, ButtonComponent, Colors } from 'discord.js';
+import { CONFIG } from '../config';
 import { AnswerResult, AnswerResultChoice } from '../db';
 import { Prompt } from '../models/prompt';
 
@@ -109,7 +110,7 @@ export const createMoreHelpBar: CreateHelperOverloads = (
 
 export const requestHelpFromChannel = async (interaction: ButtonInteraction<CacheType>, promptId: string) => {
   // hardcoded request to channel with new message
-  const SOS_CHANNEL_ID = process.env.TUTOR_SOS_CHANNEL_ID;
+  const SOS_CHANNEL_ID = CONFIG.TUTOR_SOS_CHANNEL_ID;
   if (!SOS_CHANNEL_ID) {
     console.log('no tutor sos channel id env var configured');
     return;

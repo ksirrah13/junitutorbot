@@ -2,9 +2,6 @@ import express from 'express';
 import { startDiscord } from './bot';
 import { connectDb } from './db';
 
-import dotenv from 'dotenv';
-dotenv.config();
-
 const app = express();
 
 app.get('/', (req, res) => {

@@ -1,12 +1,13 @@
 import { recordNewResponse } from "../db";
 import { processWorlframPods } from '../utils/worlfram_utils';
 import { createEmbedWrapper } from '../utils/discord_utils';
+import { CONFIG } from "../config";
 
 
 // TODO add a precheck that verifies wolfram can answer the question
 // https://products.wolframalpha.com/query-recognizer/documentation
 export const wolframPrecheck = async (prompt) => {
-  // TODO replace DEMO API key with process.env.WOLFRAM_APP_ID once resolved with support
+  // TODO replace DEMO API key with CONFIG.WOLFRAM_APP_ID once resolved with support
   const APP_ID_KEY = 'DEMO';
   const precheckUrl = `http://www.wolframalpha.com/queryrecognizer/query.jsp?appid=${APP_ID_KEY}&mode=Default&output=json&i=${encodeURIComponent(prompt)}`;
   const result = await fetch(precheckUrl);
@@ -16,13 +17,13 @@ export const wolframPrecheck = async (prompt) => {
 
 export const doWolfram = async ({prompt, thread, interaction, parentPromptId, preferredResponse, enableDebug = false}) => {
   try {
-    if (!process.env.WOLFRAM_APP_ID) {
+    if (!CONFIG.WOLFRAM_APP_ID) {
       console.log('missing wolfram app key');
       return {success: false};
     }
     const dynamicImport = new Function('specifier', 'return import(specifier)');
     const { initializeClass } = await dynamicImport('@tanzanite/wolfram-alpha');
-    const waApi = initializeClass(process.env.WOLFRAM_APP_ID);
+    const waApi = initializeClass(CONFIG.WOLFRAM_APP_ID);
     const queryResult: any = await waApi
       .getFull({ input: prompt, output: 'json', podstate: 'Step-by-step solution' }); // TODO find better podstate search agorithm
 
