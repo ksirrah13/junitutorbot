@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, CacheType, Colors, EmbedBuilder } from "discord.js";
 import { startNewPrompt } from "../db";
-import { requestAiResponses } from "../utils/bot_utils";
+import { requestAiResponses } from "../ai_sources";
 import { createFields, trimToLength, createMoreHelpBar } from "../utils/discord_utils";
 import { getMathOcrResults } from "../utils/math_ocr";
 

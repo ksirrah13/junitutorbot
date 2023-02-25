@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Events } from 'discord.js';
-import { registerSlashCommands } from './commands';
+import { handleSlashCommand, registerSlashCommands } from './commands/register';
 import { CONFIG } from './config';
-import { handleButtonInteraction, handleChatInputInteraction, handleReactionEvents, handleStringSelectInteractions } from './events';
+import { handleButtonInteraction, handleReactionEvents, handleStringSelectInteractions } from './events';
 
 const client = new Client({
   intents: [
@@ -32,8 +32,7 @@ client.on(Events.MessageCreate, async msg => {
 client.on(Events.InteractionCreate, async interaction => {
 
   if (interaction.isChatInputCommand()) {
-    // slash commands are handled here
-    await handleChatInputInteraction(interaction);
+    await handleSlashCommand(interaction);
   }
 
   if (interaction.isButton()) {
@@ -63,7 +62,8 @@ export const startDiscord = async () => {
   try {
     await client.login(CONFIG.BOT_TOKEN)
   } catch (error) {
-    console.error(error)
+    console.error(error);
+    return;
   }
   console.log('registering slash commands');
   try {

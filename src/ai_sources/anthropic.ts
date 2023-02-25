@@ -1,4 +1,5 @@
 import { AI_PROMPT, Client, HUMAN_PROMPT } from '@anthropic-ai/sdk';
+import { CONFIG } from '../config';
 import { recordNewResponse } from "../db";
 import { createEmbedWrapper } from '../utils/discord_utils';
 
@@ -6,11 +7,11 @@ import { createEmbedWrapper } from '../utils/discord_utils';
 export const doAnthropic = async ({prompt, thread, interaction, parentPromptId, preferredResponse}) => {
   try {
     // how to enable this outside of the method call? process env not yet set
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!CONFIG.ANTHROPIC_API_KEY) {
       console.log('missing key for anthropic');
       return;
     }
-    const client = new Client(process.env.ANTHROPIC_API_KEY);
+    const client = new Client(CONFIG.ANTHROPIC_API_KEY);
 
     const enhancedPrompt = createPromptTemplate(prompt);
     const completion = await client

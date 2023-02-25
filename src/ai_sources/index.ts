@@ -1,9 +1,10 @@
 import { CacheType, Interaction } from "discord.js";
-import { doAnthropic } from "../ai_sources/anthropic";
-import { doCompletion } from "../ai_sources/openai";
-import { doWolfram, wolframPrecheck } from "../ai_sources/wolfram";
+import { doAnthropic } from "./anthropic";
+import { doCompletion } from "./openai";
+import { doWolfram, wolframPrecheck } from "./wolfram";
+import { CONFIG } from "../config";
 
-const DEBUG_USER_ALLOWLIST = (process.env.DEBUG_USER_LIST ?? '').split(',');
+const DEBUG_USER_ALLOWLIST = (CONFIG.DEBUG_USER_LIST ?? '').split(',');
 
 export const requestAiResponses = async ({ prompt, thread, interaction, newPromptId, askingUserId }: { prompt: string, thread: any, interaction?: Interaction<CacheType>, newPromptId: string, askingUserId?: string }) => {
 

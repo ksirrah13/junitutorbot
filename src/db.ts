@@ -1,17 +1,15 @@
 import mongoose from 'mongoose';
-import { Prompt } from './models/prompt';
-import dotenv from 'dotenv';
-import { ResponseResult } from './models/response_result';
 import assert from 'assert';
-dotenv.config();
+import { ResponseResult, Prompt } from './models';
+import { CONFIG } from './config';
 
 export const connectDb = async () => {
   try {
     console.log('connecting to db...');
     // suppress warnings
     mongoose.set('strictQuery', false);
-    assert(process.env.DB_URI, 'Missing DB URI');
-    await mongoose.connect(process.env.DB_URI);
+    assert(CONFIG.DB_URI, 'Missing DB URI');
+    await mongoose.connect(CONFIG.DB_URI);
     console.log('connected to db');
   } catch (e) {
     console.error('error connecting to db', e);

@@ -1,4 +1,5 @@
 import { Configuration, OpenAIApi } from "openai";
+import { CONFIG } from "../config";
 import { recordNewResponse } from "../db";
 import { createEmbedWrapper } from '../utils/discord_utils';
 
@@ -9,7 +10,7 @@ export const doCompletion = async ({prompt, thread, interaction, parentPromptId,
   try {
     // how to enable this outside of the method call? process env not yet set
     const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: CONFIG.OPENAI_API_KEY,
     });
     const openai = new OpenAIApi(configuration);
 
