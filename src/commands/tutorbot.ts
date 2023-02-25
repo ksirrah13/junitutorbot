@@ -84,16 +84,13 @@ const handleTextInput = async (inputPrompt, interaction) => {
       return;
     }
     try {
-      const ocrResult = await getMathOcrResults(name);
+      const ocrResult = await getMathOcrResults(name, url);
       if (!ocrResult) {
         await interaction.reply({content: 'Error parsing image, please try a different image', ephemeral: true});
         return;
       }
-      const { data } : {data: Record<string, any>[]} = ocrResult;
-      // hacked for now to only have one data response
-      const result = data?.[0]?.value;
       // const imageFieldResults = (data ?? []).map(result => ({name: result.type, value: result.value}))
-      const imageFieldResults = [{name: "Result", "value": result }]
+      const imageFieldResults = [{name: "Result", "value": ocrResult }]
       const questionEmbed = new EmbedBuilder()
         .setColor(Colors.Green)
         .setDescription(`<@${interaction.user.id}> uploaded an image! Here are the results! 🤖💬`)
@@ -101,14 +98,14 @@ const handleTextInput = async (inputPrompt, interaction) => {
         .setThumbnail(url);
     const message = await interaction.reply({embeds: [questionEmbed], fetchReply: true});
     const thread = await message.startThread({
-      name: trimToLength(`Parsed from image: ${data?.[0]?.value}`),
+      name: trimToLength(`Parsed from image: ${ocrResult}`),
       autoArchiveDuration: 60,
       reason: 'Collecting response from AI',
     })
     // there should only be one result for data for now (hacked in static response)
     // const annotatedPrompt = `The math problem is given in ${result.type} format. Solve the following problem. ${result.value}`;
-    const newPromptId = await startNewPrompt({user: interaction.user.id, input: result, messageId: message.id, messageUrl: message.url});
-    await requestAiResponses({prompt: result, thread, interaction, newPromptId, askingUserId: interaction.user.id})
+    const newPromptId = await startNewPrompt({user: interaction.user.id, input: ocrResult, messageId: message.id, messageUrl: message.url});
+    await requestAiResponses({prompt: ocrResult, thread, interaction, newPromptId, askingUserId: interaction.user.id})
     await interaction.followUp(createMoreHelpBar({promptId: newPromptId, ephemeral: true}));
     
   } catch (error) {
