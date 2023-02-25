@@ -13,4 +13,6 @@ export const CONFIG = {
     DEV_MODE: process.env.DEV_MODE,
     DEBUG_USER_LIST: process.env.DEBUG_USER_LIST,
     TUTOR_SOS_CHANNEL_ID: process.env.TUTOR_SOS_CHANNEL_ID,
+    MATHPIX_API_KEY: process.env.MATHPIX_API_KEY,
+    MATHPIX_APP_ID: process.env.MATHPIX_APP_ID,
 }

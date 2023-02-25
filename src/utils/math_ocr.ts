@@ -1,10 +1,46 @@
-export const getMathOcrResults = async (image: string) => {
+import { CONFIG } from "../config";
+
+export const getMathOcrResults = async (name: string, url: string) => {
     // TODO replace with the an actual API call
-    const result = MATH_OCR_RESULTS[image];
-    if (!result) {
-        throw new Error(`Error getting OCR result for ${image}`);
+    const result = MATH_OCR_RESULTS[name];
+    if (result) {
+        return result.data[0].value;
     }
-    return result;
+    const response = getMathpixResult(url);   
+    return response;
+}
+
+const AUTH = {
+    "app_id": CONFIG.MATHPIX_APP_ID ?? '',
+    "app_key": CONFIG.MATHPIX_API_KEY ?? ''
+}
+
+const getMathpixResult = async (url: string) => {
+    try {
+    const response = await fetch("https://api.mathpix.com/v3/text", {
+            method: 'POST', 
+            body: JSON.stringify({
+                "src": url,
+                "formats": ["data"],
+                "data_options": {
+                  "include_asciimath": true
+                }
+              }), 
+            headers: {
+                'Content-Type': 'application/json', 
+                ...AUTH
+            }
+        });
+    const result = await response.json();
+    const asciiMathResults = result.data.filter(result => result.type === 'asciimath');
+    if (asciiMathResults.length !== 1) {
+        console.log('multiple or no asciimath results');
+        return;
+    }
+    return asciiMathResults[0].value;
+} catch (error) {
+    console.log(error);
+}
 }
 
 const TEXT_WITH_MATH = {
