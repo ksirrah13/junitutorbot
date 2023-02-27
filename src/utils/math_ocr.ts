@@ -1,12 +1,13 @@
 import { CONFIG } from "../config";
 
 export const getMathOcrResults = async (name: string, url: string) => {
-    // TODO replace with the an actual API call
+    // using hardcoded responses when available to ensure good demo results
+    // TODO remove when we get reliable results from OCR API
     const result = MATH_OCR_RESULTS[name];
     if (result) {
         return result.data[0].value;
     }
-    const response = getMathpixResult(url);   
+    const response = getWolframResult(url);
     return response;
 }
 
@@ -15,19 +16,45 @@ const AUTH = {
     "app_key": CONFIG.MATHPIX_API_KEY ?? ''
 }
 
+// DEPRECATED mathpix api but provides a wolfram formatted result (sort of)
+const getWolframResult = async (url) => {
+    try {
+        const response = await fetch("https://api.mathpix.com/v3/latex", {
+                method: 'POST',
+                body: JSON.stringify({
+                    "src": url,
+                    // "formats": ["asciimath", "latex_normal", "wolfram"]
+                    "formats": ["wolfram"]
+                    // "data_options": {
+                    //   "include_asciimath": true
+                    // }
+                  }), 
+                headers: {
+                    'Content-Type': 'application/json', 
+                    ...AUTH
+                }
+            });
+
+        const result = await response.json();
+        return result.wolfram;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 const getMathpixResult = async (url: string) => {
     try {
     const response = await fetch("https://api.mathpix.com/v3/text", {
-            method: 'POST', 
+            method: 'POST',
             body: JSON.stringify({
                 "src": url,
                 "formats": ["data"],
                 "data_options": {
                   "include_asciimath": true
                 }
-              }), 
+              }),
             headers: {
-                'Content-Type': 'application/json', 
+                'Content-Type': 'application/json',
                 ...AUTH
             }
         });
